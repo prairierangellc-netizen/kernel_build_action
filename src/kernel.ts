@@ -139,6 +139,12 @@ export async function setupMkdtboimg(kernelDir: string, actionPath: string): Pro
         core.startGroup('Using mkdtboimg Python3 version instead of Python2 version');
         fs.rmSync(mkdtboimgPath);
         fs.copyFileSync(actionMkdtboimg, mkdtboimgPath);
+
+        // Create python2 symlink if needed
+        if (!fs.existsSync('/usr/bin/python2')) {
+          await exec.exec('sudo', ['ln', '-sf', '/usr/bin/python3', '/usr/bin/python2']);
+        }
+
         core.endGroup();
       } else if (
         content.includes('scripts/ufdt') &&
@@ -148,11 +154,6 @@ export async function setupMkdtboimg(kernelDir: string, actionPath: string): Pro
         fs.mkdirSync(ufdtDir, { recursive: true });
         fs.copyFileSync(actionMkdtboimg, path.join(ufdtDir, 'mkdtboimg.py'));
       }
-    }
-
-    // Create python2 symlink if needed
-    if (!fs.existsSync('/usr/bin/python2')) {
-      await exec.exec('sudo', ['ln', '-sf', '/usr/bin/python3', '/usr/bin/python2']);
     }
   } else {
     core.startGroup('Downloading mkdtboimg to /usr/local/bin');

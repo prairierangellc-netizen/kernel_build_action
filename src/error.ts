@@ -326,14 +326,14 @@ export function analyzeErrors(logFile: string): number {
       core.info(`  ${errorLine}`);
     }
     core.info(`Error: ${block.type}`);
-    core.info(`Suggestion: ${block.suggestion}`);
+    core.warning(`Suggestion: ${block.suggestion}`);
     printSeparator();
   }
 
   // Summary
   if (errorCount > 0) {
     core.info(`Total found ${errorCount} error(s).`);
-    core.info('Please carefully review the error messages and suggestions above.');
+    core.warning('Please carefully review the error messages and suggestions above.');
 
     // Create have_error marker file
     fs.writeFileSync('have_error', '');
@@ -346,7 +346,7 @@ export function analyzeErrors(logFile: string): number {
     for (let idx = 0; idx < errorBlocks.length; idx++) {
       const block = errorBlocks[idx];
       core.info(`\n  [${idx + 1}] ${block.type}`);
-      core.info(`      ${block.suggestion}`);
+      core.warning(`      ${block.suggestion}`);
     }
     core.info('\n' + '='.repeat(56));
     core.info(`Total: ${errorCount} error(s)`);

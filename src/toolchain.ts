@@ -59,6 +59,7 @@ async function downloadAndExtract(
 
 /**
  * Normalize toolchain directory structure
+ * Handles AOSP GCC structure: gcc-64/aarch64-linux-android-4.9/bin/ -> gcc-64/bin/
  */
 function normalizeToolchainDir(dirPath: string, dirName: string): void {
   const binDir = path.join(dirPath, 'bin');
@@ -67,27 +68,41 @@ function normalizeToolchainDir(dirPath: string, dirName: string): void {
   }
 
   core.info(`Normalizing ${dirName} directory structure...`);
+
+  // Look for nested directories like aarch64-linux-android-4.9/bin/
   const entries = fs.readdirSync(dirPath, { withFileTypes: true });
 
   for (const entry of entries) {
     if (entry.isDirectory()) {
       const nestedPath = path.join(dirPath, entry.name);
-      const nestedEntries = fs.readdirSync(nestedPath, { withFileTypes: true });
+      const nestedBinPath = path.join(nestedPath, 'bin');
 
-      for (const nestedEntry of nestedEntries) {
-        if (nestedEntry.isDirectory()) {
-          const deepPath = path.join(nestedPath, nestedEntry.name);
-          const deepEntries = fs.readdirSync(deepPath);
+      // Check if this nested directory has a bin subdirectory
+      if (dirExists(nestedBinPath)) {
+        // Create the top-level bin directory
+        fs.mkdirSync(binDir, { recursive: true });
 
-          for (const file of deepEntries) {
-            const srcPath = path.join(deepPath, file);
-            const destPath = path.join(dirPath, file);
-            if (!fs.existsSync(destPath)) {
-              fs.renameSync(srcPath, destPath);
-            }
+        // Move all files from nested bin to top-level bin
+        const files = fs.readdirSync(nestedBinPath);
+        for (const file of files) {
+          const srcPath = path.join(nestedBinPath, file);
+          const destPath = path.join(binDir, file);
+          if (!fs.existsSync(destPath)) {
+            fs.renameSync(srcPath, destPath);
           }
-          return;
         }
+
+        // Also move lib and lib64 directories if they exist
+        for (const libDir of ['lib', 'lib64', 'libexec', 'include']) {
+          const nestedLibPath = path.join(nestedPath, libDir);
+          const topLibPath = path.join(dirPath, libDir);
+          if (dirExists(nestedLibPath) && !fs.existsSync(topLibPath)) {
+            fs.renameSync(nestedLibPath, topLibPath);
+          }
+        }
+
+        core.info(`Normalized ${dirName}: moved contents from ${entry.name}/bin/ to bin/`);
+        return;
       }
     }
   }
@@ -194,25 +209,6 @@ async function downloadOtherGcc(
 }
 
 /**
- * Detect GCC prefix from directory
- */
-function detectGccPrefix(gccDir: string): string | undefined {
-  if (!dirExists(gccDir)) {
-    return undefined;
-  }
-
-  // Look for gcc executable
-  const entries = fs.readdirSync(gccDir);
-  for (const entry of entries) {
-    if (entry.endsWith('-gcc') && !entry.includes('++')) {
-      return entry.replace('-gcc', '');
-    }
-  }
-
-  return undefined;
-}
-
-/**
  * Normalize GCC directory structure and detect prefix
  */
 function normalizeGccDirs(): { gcc64Prefix?: string; gcc32Prefix?: string } {
@@ -222,26 +218,50 @@ function normalizeGccDirs(): { gcc64Prefix?: string; gcc32Prefix?: string } {
   normalizeToolchainDir(gcc64Dir, 'GCC64');
   normalizeToolchainDir(gcc32Dir, 'GCC32');
 
-  // Look for nested bin directories
+  let gcc64Prefix: string | undefined;
+  let gcc32Prefix: string | undefined;
+
+  // Detect prefix by matching file names (like original bash script)
   for (const gccDir of [gcc64Dir, gcc32Dir]) {
     if (!dirExists(gccDir)) continue;
+    const binDir = path.join(gccDir, 'bin');
+    if (dirExists(binDir)) {
+      const files = fs.readdirSync(binDir);
+      for (const file of files) {
+        if (!file.startsWith('.') && (file.includes('-gcc') || file.includes('-ld'))) {
+          const fileName = path.basename(file);
+          // Find the directory name that matches the file prefix
+          const folders = fs
+            .readdirSync(gccDir, { withFileTypes: true })
+            .filter((e) => e.isDirectory())
+            .map((e) => e.name)
+            .sort()
+            .reverse();
 
-    const entries = fs.readdirSync(gccDir, { withFileTypes: true });
-    for (const entry of entries) {
-      if (entry.isDirectory()) {
-        const nestedPath = path.join(gccDir, entry.name);
-        const nestedEntries = fs.readdirSync(nestedPath, { withFileTypes: true });
-
-        for (const nestedEntry of nestedEntries) {
-          if (nestedEntry.isDirectory() && nestedEntry.name === 'bin') {
-            const binPath = path.join(nestedPath, nestedEntry.name);
-            const files = fs.readdirSync(binPath);
-            for (const file of files) {
-              const destPath = path.join(gccDir, file);
-              if (!fs.existsSync(destPath)) {
-                fs.renameSync(path.join(binPath, file), destPath);
+          for (const folder of folders) {
+            if (fileName.startsWith(folder)) {
+              if (gccDir === gcc64Dir) {
+                gcc64Prefix = folder;
+              } else {
+                gcc32Prefix = folder;
+              }
+              break;
+            }
+          }
+          // If no folder match found, try to extract prefix from filename
+          // e.g., "aarch64-linux-android-4.9-gcc" -> "aarch64-linux-android-4.9"
+          if ((gccDir === gcc64Dir && !gcc64Prefix) || (gccDir === gcc32Dir && !gcc32Prefix)) {
+            const match = fileName.match(/^([a-z0-9-]+)-(?:gcc|ld|as|ar)$/);
+            if (match) {
+              if (gccDir === gcc64Dir) {
+                gcc64Prefix = match[1];
+              } else {
+                gcc32Prefix = match[1];
               }
             }
+          }
+          if ((gccDir === gcc64Dir && gcc64Prefix) || (gccDir === gcc32Dir && gcc32Prefix)) {
+            break;
           }
         }
       }
@@ -249,8 +269,8 @@ function normalizeGccDirs(): { gcc64Prefix?: string; gcc32Prefix?: string } {
   }
 
   return {
-    gcc64Prefix: detectGccPrefix(gcc64Dir),
-    gcc32Prefix: detectGccPrefix(gcc32Dir),
+    gcc64Prefix,
+    gcc32Prefix,
   };
 }
 

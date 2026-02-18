@@ -17,6 +17,7 @@ export interface BuildConfig {
 
 /**
  * Build the kernel
+ * Matches the behavior of action.yml.1 bash script
  */
 export async function buildKernel(config: BuildConfig): Promise<boolean> {
   core.startGroup('Building Kernel with selected cross compiler');
@@ -29,16 +30,16 @@ export async function buildKernel(config: BuildConfig): Promise<boolean> {
   // Validate arch matches expected patterns to prevent command injection
   const validArchs = ['arm', 'arm64', 'x86', 'x86_64', 'riscv', 'riscv64', 'mips', 'mips64'];
   if (!validArchs.includes(config.arch)) {
-    throw new Error(`Invalid architecture: ${config.arch}. Valid options: ${validArchs.join(', ')}`);
+    throw new Error(
+      `Invalid architecture: ${config.arch}. Valid options: ${validArchs.join(', ')}`
+    );
   }
 
   const outDir = path.join(config.kernelDir, 'out');
   fs.mkdirSync(outDir, { recursive: true });
 
-  // Prepare environment
-  const env: { [key: string]: string } = { ...process.env } as { [key: string]: string };
-
-  // Setup compiler
+  // Build CMD_PATH for toolchains (matches original bash script exactly)
+  let cmdPath = '';
   let cmdCc: string;
   let cmdCrossCompile: string | undefined;
   let cmdCrossCompileArm32: string | undefined;
@@ -46,8 +47,8 @@ export async function buildKernel(config: BuildConfig): Promise<boolean> {
 
   if (config.toolchain.clangPath) {
     // Use Clang
-    cmdCc = path.join(config.toolchain.clangPath, 'bin', 'clang');
-    core.addPath(path.join(config.toolchain.clangPath, 'bin'));
+    cmdPath = path.join(config.toolchain.clangPath, 'bin');
+    cmdCc = 'clang';
 
     if (config.toolchain.gcc64Path || config.toolchain.gcc32Path) {
       if (config.toolchain.gcc64Path && config.toolchain.gcc64Prefix) {
@@ -70,18 +71,23 @@ export async function buildKernel(config: BuildConfig): Promise<boolean> {
     if (config.toolchain.gcc64Path && config.toolchain.gcc64Prefix) {
       cmdCc = path.join(config.toolchain.gcc64Path, 'bin', `${config.toolchain.gcc64Prefix}-gcc`);
       cmdCrossCompile = `${config.toolchain.gcc64Prefix}-`;
-      core.addPath(path.join(config.toolchain.gcc64Path, 'bin'));
+      cmdPath = path.join(config.toolchain.gcc64Path, 'bin');
     } else if (config.toolchain.gcc32Path && config.toolchain.gcc32Prefix) {
       cmdCc = path.join(config.toolchain.gcc32Path, 'bin', `${config.toolchain.gcc32Prefix}-gcc`);
       cmdCrossCompile = `${config.toolchain.gcc32Prefix}-`;
-      core.addPath(path.join(config.toolchain.gcc32Path, 'bin'));
+      cmdPath = path.join(config.toolchain.gcc32Path, 'bin');
     } else {
       cmdCc = '/usr/bin/gcc';
     }
 
+    // Add gcc-32 bin to PATH if available
     if (config.toolchain.gcc32Path && config.toolchain.gcc32Prefix) {
       cmdCrossCompileArm32 = `${config.toolchain.gcc32Prefix}-`;
-      core.addPath(path.join(config.toolchain.gcc32Path, 'bin'));
+      if (cmdPath) {
+        cmdPath += `:${path.join(config.toolchain.gcc32Path, 'bin')}`;
+      } else {
+        cmdPath = path.join(config.toolchain.gcc32Path, 'bin');
+      }
     }
   } else {
     // System toolchain
@@ -90,24 +96,28 @@ export async function buildKernel(config: BuildConfig): Promise<boolean> {
     cmdCrossCompileArm32 = 'arm-linux-gnueabihf-';
   }
 
-  // Setup CLANG_TRIPLE
+  // Setup CLANG_TRIPLE (matches bash script)
   if (config.arch === 'arm') {
     cmdClangTriple = cmdCrossCompileArm32 || 'arm-linux-gnueabihf-';
   } else {
     cmdClangTriple = 'aarch64-linux-gnu-';
   }
 
-  // Add ccache to path if enabled
+  // Add ccache to path if enabled (matches bash: CMD_PATH="/usr/lib/ccache:$CMD_PATH")
   if (config.useCcache) {
-    env.USE_CCACHE = '1';
-    core.addPath('/usr/lib/ccache');
+    const ccachePath = '/usr/lib/ccache';
+    if (cmdPath) {
+      cmdPath = `${ccachePath}:${cmdPath}`;
+    } else {
+      cmdPath = ccachePath;
+    }
   }
 
   // Parse extra make arguments
   const extraArgs = parseExtraMakeArgs(config.extraMakeArgs);
   const safeExtraArgs = filterMakeArgs(extraArgs);
 
-  // Build make arguments
+  // Build make arguments (matches bash script exactly)
   const makeArgs = [
     `-j${os.cpus().length}`,
     config.config,
@@ -123,38 +133,80 @@ export async function buildKernel(config: BuildConfig): Promise<boolean> {
   core.info(`CLANG_TRIPLE: ${cmdClangTriple}`);
   core.info(`Make args: ${makeArgs.join(' ')}`);
 
-  // Run make
+  // Build the make command exactly like bash script
+  // export PATH="$CMD_PATH:$PATH"
+  // make CC="$CMD_CC" CROSS_COMPILE="$CMD_CROSS_COMPILE" ...
   const logFile = path.join(outDir, 'build.log');
-  const logStream = fs.createWriteStream(logFile, { flags: 'a' });
 
-  const makeEnv = {
-    ...env,
-    CC: cmdCc,
-    CROSS_COMPILE: cmdCrossCompile || '',
-    CROSS_COMPILE_ARM32: cmdCrossCompileArm32 || '',
-    CLANG_TRIPLE: cmdClangTriple,
-  };
+  // Construct environment variables for make (matching bash export statements)
+  const envVars: { [key: string]: string } = {};
 
+  // export USE_CCACHE=1 (if enabled)
+  if (config.useCcache) {
+    envVars.USE_CCACHE = '1';
+  }
+
+  // Build the command line arguments with variable assignments (like bash does)
+  const makeCmdArgs: string[] = [];
+
+  // Add PATH export: export PATH="$CMD_PATH:$PATH"
+  const currentPath = process.env.PATH || '';
+  const newPath = cmdPath ? `${cmdPath}:${currentPath}` : currentPath;
+  envVars.PATH = newPath;
+
+  // Add make variable assignments (matching bash: make CC="$CMD_CC" ...)
+  makeCmdArgs.push(`CC=${cmdCc}`);
+  if (cmdCrossCompile) {
+    makeCmdArgs.push(`CROSS_COMPILE=${cmdCrossCompile}`);
+  }
+  if (cmdCrossCompileArm32) {
+    makeCmdArgs.push(`CROSS_COMPILE_ARM32=${cmdCrossCompileArm32}`);
+  }
+  makeCmdArgs.push(`CLANG_TRIPLE=${cmdClangTriple}`);
+
+  // Add the rest of make arguments
+  makeCmdArgs.push(...makeArgs);
+
+  core.info(`Environment variables being set:`);
+  core.info(`  PATH=${newPath.substring(0, 200)}...`);
+  if (config.useCcache) {
+    core.info(`  USE_CCACHE=1`);
+  }
+  core.info(`Make command: make ${makeCmdArgs.join(' ')}`);
+
+  // Test if clang can be found in PATH
+  try {
+    await exec.exec('which', ['clang'], {
+      cwd: config.kernelDir,
+      env: { ...process.env, PATH: newPath },
+      silent: true,
+    });
+    core.info('✓ clang found in PATH');
+  } catch {
+    core.warning('✗ clang NOT found in PATH');
+  }
+
+  // Run make using bash to match the bash script behavior exactly
+  // This ensures environment variables are handled the same way
   let exitCode = 0;
   try {
-    exitCode = await exec.exec('make', makeArgs, {
+    // Use exec.exec with the constructed environment
+    exitCode = await exec.exec('make', makeCmdArgs, {
       cwd: config.kernelDir,
-      env: makeEnv,
+      env: { ...process.env, ...envVars } as { [key: string]: string },
       listeners: {
         stdout: (data: Buffer) => {
-          logStream.write(data);
+          fs.appendFileSync(logFile, data);
           process.stdout.write(data);
         },
         stderr: (data: Buffer) => {
-          logStream.write(data);
+          fs.appendFileSync(logFile, data);
           process.stderr.write(data);
         },
       },
     });
   } catch (error) {
     exitCode = 1;
-  } finally {
-    logStream.end();
   }
 
   core.endGroup();

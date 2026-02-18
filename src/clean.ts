@@ -180,5 +180,3 @@ export async function cleanAll(options: {
   core.info('Clean completed!');
   core.endGroup();
 }
-
-

@@ -151,10 +151,6 @@ async function main(): Promise<void> {
 
     // Get kernel version
     const kernelVersion = getKernelVersion(kernelDir);
-    core.info(
-      `Kernel version: ${kernelVersion.version}.${kernelVersion.patchlevel}.${kernelVersion.sublevel}`
-    );
-    core.info(`GKI: ${kernelVersion.isGki}`);
 
     // Setup mkdtboimg
     await setupMkdtboimg(kernelDir, actionPath);

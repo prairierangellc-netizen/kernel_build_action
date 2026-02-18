@@ -1,3 +1,4 @@
+---
 name: 'Android Kernel Build Action'
 description: "An action to build android kernel."
 
@@ -163,4 +164,3 @@ runs:
   main: 'dist/index.js'
   post: 'dist/post/index.js'
   post-if: 'always()'
-

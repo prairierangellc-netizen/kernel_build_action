@@ -1,4 +1,5 @@
 import * as core from '@actions/core';
+import * as fs from 'fs';
 import * as path from 'path';
 
 import { cleanAll } from './clean';
@@ -15,11 +16,16 @@ async function post(): Promise<void> {
     const buildFailed = core.getState('BUILD_FAILED') === 'true';
 
     if (buildFailed) {
-      core.startGroup('Analyzing build errors');
       const kernelDir = core.getInput('kernel-dir') || 'kernel';
       const fullKernelDir = path.join('kernel', kernelDir);
-      analyzeBuildErrors(fullKernelDir);
-      core.endGroup();
+      const buildLogPath = path.join(fullKernelDir, 'out', 'build.log');
+
+      // Only analyze errors if build.log exists
+      if (fs.existsSync(buildLogPath)) {
+        core.startGroup('Analyzing build errors');
+        analyzeBuildErrors(fullKernelDir);
+        core.endGroup();
+      }
     }
 
     // Cleanup

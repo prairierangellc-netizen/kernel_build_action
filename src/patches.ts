@@ -21,6 +21,12 @@ export async function setupKernelSU(
 ): Promise<void> {
   core.startGroup('Initializing KernelSU');
 
+  // Display kernel version and GKI status
+  core.info(
+    `Kernel version: ${kernelVersion.version}.${kernelVersion.patchlevel}.${kernelVersion.sublevel}`
+  );
+  core.info(`GKI: ${kernelVersion.isGki}`);
+
   const ksuDir = path.join(kernelDir, 'KernelSU', 'kernel');
 
   // Check if KernelSU is already initialized
@@ -64,12 +70,8 @@ export async function setupKernelSU(
     kver = 'v0.9.5';
   }
 
-  core.info(
-    `Kernel version: ${kernelVersion.version}.${kernelVersion.patchlevel}.${kernelVersion.sublevel}`
-  );
-
-  // Run setup script
-  await exec.exec('bash', [setupScriptPath, kver], { cwd: kernelDir });
+  // Run setup script (use relative path since cwd is set to kernelDir)
+  await exec.exec('bash', ['ksu_setup.sh', kver], { cwd: kernelDir });
 
   // Handle LKM mode
   if (options.lkm) {
@@ -98,7 +100,9 @@ export async function setupKernelSU(
       // Apply patches with opam environment evaluated
       const applyCocciPath = path.join(getActionPath(), 'kernelsu', 'apply_cocci.py');
       try {
-        await exec.exec('bash', ['-c', `eval $(opam env) && python3 ${applyCocciPath}`], { cwd: kernelDir });
+        await exec.exec('bash', ['-c', `eval $(opam env) && python3 ${applyCocciPath}`], {
+          cwd: kernelDir,
+        });
       } catch {
         core.warning('Failed to apply KernelSU patches');
       }

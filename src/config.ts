@@ -5,8 +5,11 @@ import * as fs from 'fs';
  * Disable LTO in kernel config
  */
 export function disableLto(configPath: string): void {
+  core.startGroup('Disabling LTO');
+
   if (!fs.existsSync(configPath)) {
     core.warning(`Config file not found: ${configPath}`);
+    core.endGroup();
     return;
   }
 
@@ -26,12 +29,16 @@ export function disableLto(configPath: string): void {
 
   fs.writeFileSync(configPath, content);
   core.info('LTO disabled');
+
+  core.endGroup();
 }
 
 /**
  * Enable KVM support
  */
 export function enableKvm(configPath: string): void {
+  core.startGroup('Enabling KVM support');
+
   core.info('Enabling KVM support...');
 
   const kvmOptions = [
@@ -46,6 +53,8 @@ export function enableKvm(configPath: string): void {
   }
 
   core.info('KVM support enabled');
+
+  core.endGroup();
 }
 
 /**
