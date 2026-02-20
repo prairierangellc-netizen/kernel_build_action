@@ -4,7 +4,7 @@
   "description": "Android Kernel Build Action",
   "main": "dist/index.js",
   "scripts": {
-    "build": "ncc build src/index.ts -o dist && ncc build src/post.ts -o dist/post",
+    "build": "rm -rf dist && ncc build src/index.ts -o dist && ncc build src/post.ts -o dist/post",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write src/**/*.ts",
     "format:check": "prettier --check src/**/*.ts"
@@ -17,7 +17,8 @@
     "@actions/github": "^8.0.0",
     "@actions/tool-cache": "^3.0.0",
     "@octokit/rest": "^22.0.1",
-    "is-plain-object": "^5.0.0"
+    "is-plain-object": "^5.0.0",
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "@types/node": "^25.3.0",
