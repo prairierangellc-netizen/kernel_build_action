@@ -1,7 +1,19 @@
 name: Build 
 on: [push, workflow_dispatch] 
 jobs: 
-  test: 
+  build: 
     runs-on: ubuntu-latest 
     steps: 
-      - run: echo hello 
+      - uses: actions/checkout@v4 
+      - name: Source 
+        run: git clone https://github.com/MotorolaMobilityLLC/kernel-msm --depth 1 source 
+      - name: Deps 
+        run: sudo apt-get update && sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev clang lld llvm 
+      - name: Toolchain 
+          git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 -b master --depth 1 tc_64 
+          git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 -b master --depth 1 tc_32 
+      - name: Build 
+          cd source 
+          make O=out ARCH=arm64 gki_defconfig 
+          scripts/kconfig/merge_config.sh -O out arch/arm64/configs/gki_defconfig arch/arm64/configs/vendor/parrot_GKI.config 
+          make O=out ARCH=arm64 CC=clang CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=$(pwd)/../tc_64/bin/aarch64-linux-android- CROSS_COMPILE_ARM32=$(pwd)/../tc_32/bin/arm-linux-androideabi- -j$(nproc) 
