@@ -1,6 +1,6 @@
 name: Boston-SusFS-Build
 on:
-  workflow_dispatch:
+  workflow_dispatch:`n  push:
 jobs:
   build:
     runs-on: ubuntu-latest
