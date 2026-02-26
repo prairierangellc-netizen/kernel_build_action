@@ -1,1 +1,17 @@
-name: Build`non: [push, workflow_dispatch]`njobs:`n  build:`n    runs-on: ubuntu-latest`n    steps:`n      - uses: actions/checkout@v4`n      - name: Build`n        run: |`n          git clone https://github.com/MotorolaMobilityLLC/kernel-msm --depth 1 source`n          sudo apt-get update`n          sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev clang lld llvm`n          cd source`n          make O=out ARCH=arm64 gki_defconfig`n          scripts/kconfig/merge_config.sh -O out arch/arm64/configs/gki_defconfig arch/arm64/configs/vendor/parrot_GKI.config
+name: Build
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          git clone https://github.com/MotorolaMobilityLLC/kernel-msm --depth 1 source
+          sudo apt-get update
+          sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev clang lld llvm
+          cd source
+          make O=out ARCH=arm64 gki_defconfig
+          scripts/kconfig/merge_config.sh -O out arch/arm64/configs/gki_defconfig arch/arm64/configs/vendor/parrot_GKI.config
