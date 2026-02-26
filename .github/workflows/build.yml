@@ -1,1 +1,7 @@
-name: Truth Test`non: [push, workflow_dispatch]`njobs:`n  test:`n    runs-on: ubuntu-latest`n    steps:`n      - run: echo "GitHub Actions is working"
+name: Build 
+on: [push, workflow_dispatch] 
+jobs: 
+  test: 
+    runs-on: ubuntu-latest 
+    steps: 
+      - run: echo hello 
