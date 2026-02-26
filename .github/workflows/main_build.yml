@@ -20,4 +20,3 @@ jobs:
           aosp-clang: true
           ksu: true
           ksu-version: main
-          extra-make-args: [ "LD=ld.lld", "LLVM=1", "LLVM_IAS=1" ]
