@@ -12,9 +12,8 @@ jobs:
         with:
           kernel-url: https://github.com/MotorolaMobilityLLC/kernel-msm
           kernel-branch: mmi-U2UBS34.44-57-8-7
-          config: vendor/pstar_defconfig
+          config: pstar_defconfig
           arch: arm64
           aosp-clang: false
           other-clang-url: "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/tags/android-cts-11.0_r1/clang-r383902.tar.gz"
           ksu: true
-          ksu-version: main
