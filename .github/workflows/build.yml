@@ -15,7 +15,7 @@ jobs:
           config: pstar_defconfig
           arch: arm64
           aosp-clang: true
-          aosp-clang-version: r383902
+          aosp-clang-version: r450784d
           aosp-gcc: true
           ksu: true
           ksu-version: main
