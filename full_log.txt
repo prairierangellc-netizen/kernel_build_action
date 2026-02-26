@@ -1,0 +1,432 @@
+build	Set up job	﻿2026-02-26T21:18:33.7663957Z Current runner version: '2.331.0'
+build	Set up job	2026-02-26T21:18:33.7699741Z ##[group]Runner Image Provisioner
+build	Set up job	2026-02-26T21:18:33.7700981Z Hosted Compute Agent
+build	Set up job	2026-02-26T21:18:33.7701884Z Version: 20260213.493
+build	Set up job	2026-02-26T21:18:33.7702786Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+build	Set up job	2026-02-26T21:18:33.7703983Z Build Date: 2026-02-13T00:28:41Z
+build	Set up job	2026-02-26T21:18:33.7705013Z Worker ID: {e82e5241-d1e5-415f-b55e-29716ef7f0b7}
+build	Set up job	2026-02-26T21:18:33.7706200Z Azure Region: centralus
+build	Set up job	2026-02-26T21:18:33.7707457Z ##[endgroup]
+build	Set up job	2026-02-26T21:18:33.7709526Z ##[group]Operating System
+build	Set up job	2026-02-26T21:18:33.7710452Z Ubuntu
+build	Set up job	2026-02-26T21:18:33.7711109Z 24.04.3
+build	Set up job	2026-02-26T21:18:33.7711984Z LTS
+build	Set up job	2026-02-26T21:18:33.7712731Z ##[endgroup]
+build	Set up job	2026-02-26T21:18:33.7713507Z ##[group]Runner Image
+build	Set up job	2026-02-26T21:18:33.7714459Z Image: ubuntu-24.04
+build	Set up job	2026-02-26T21:18:33.7715310Z Version: 20260224.36.1
+build	Set up job	2026-02-26T21:18:33.7717134Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260224.36/images/ubuntu/Ubuntu2404-Readme.md
+build	Set up job	2026-02-26T21:18:33.7719999Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260224.36
+build	Set up job	2026-02-26T21:18:33.7721591Z ##[endgroup]
+build	Set up job	2026-02-26T21:18:33.7726555Z ##[group]GITHUB_TOKEN Permissions
+build	Set up job	2026-02-26T21:18:33.7729505Z Actions: write
+build	Set up job	2026-02-26T21:18:33.7730613Z ArtifactMetadata: write
+build	Set up job	2026-02-26T21:18:33.7731539Z Attestations: write
+build	Set up job	2026-02-26T21:18:33.7732433Z Checks: write
+build	Set up job	2026-02-26T21:18:33.7733314Z Contents: write
+build	Set up job	2026-02-26T21:18:33.7734289Z Deployments: write
+build	Set up job	2026-02-26T21:18:33.7735221Z Discussions: write
+build	Set up job	2026-02-26T21:18:33.7736114Z Issues: write
+build	Set up job	2026-02-26T21:18:33.7737289Z Metadata: read
+build	Set up job	2026-02-26T21:18:33.7738066Z Models: read
+build	Set up job	2026-02-26T21:18:33.7738929Z Packages: write
+build	Set up job	2026-02-26T21:18:33.7739733Z Pages: write
+build	Set up job	2026-02-26T21:18:33.7740679Z PullRequests: write
+build	Set up job	2026-02-26T21:18:33.7741682Z RepositoryProjects: write
+build	Set up job	2026-02-26T21:18:33.7742687Z SecurityEvents: write
+build	Set up job	2026-02-26T21:18:33.7743657Z Statuses: write
+build	Set up job	2026-02-26T21:18:33.7744487Z ##[endgroup]
+build	Set up job	2026-02-26T21:18:33.7747782Z Secret source: Actions
+build	Set up job	2026-02-26T21:18:33.7748569Z Prepare workflow directory
+build	Set up job	2026-02-26T21:18:33.8079768Z Prepare all required actions
+build	Set up job	2026-02-26T21:18:33.8119009Z Getting action download info
+build	Set up job	2026-02-26T21:18:34.1540996Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+build	Set up job	2026-02-26T21:18:34.3172328Z Download action repository 'dabao1955/kernel_build_action@main' (SHA:a47e90a9ffb6bf0986f9caed5e8a47eb2027954f)
+build	Set up job	2026-02-26T21:18:35.0493421Z Complete job name: build
+build	Checkout	﻿2026-02-26T21:18:35.1207346Z ##[group]Run actions/checkout@v4
+build	Checkout	2026-02-26T21:18:35.1208295Z with:
+build	Checkout	2026-02-26T21:18:35.1208838Z   repository: prairierangellc-netizen/kernel_build_action
+build	Checkout	2026-02-26T21:18:35.1209676Z   token: ***
+build	Checkout	2026-02-26T21:18:35.1210079Z   ssh-strict: true
+build	Checkout	2026-02-26T21:18:35.1210490Z   ssh-user: git
+build	Checkout	2026-02-26T21:18:35.1210903Z   persist-credentials: true
+build	Checkout	2026-02-26T21:18:35.1211378Z   clean: true
+build	Checkout	2026-02-26T21:18:35.1211805Z   sparse-checkout-cone-mode: true
+build	Checkout	2026-02-26T21:18:35.1212339Z   fetch-depth: 1
+build	Checkout	2026-02-26T21:18:35.1212867Z   fetch-tags: false
+build	Checkout	2026-02-26T21:18:35.1213294Z   show-progress: true
+build	Checkout	2026-02-26T21:18:35.1213728Z   lfs: false
+build	Checkout	2026-02-26T21:18:35.1214119Z   submodules: false
+build	Checkout	2026-02-26T21:18:35.1214565Z   set-safe-directory: true
+build	Checkout	2026-02-26T21:18:35.1215424Z ##[endgroup]
+build	Checkout	2026-02-26T21:18:35.2344207Z Syncing repository: prairierangellc-netizen/kernel_build_action
+build	Checkout	2026-02-26T21:18:35.2347846Z ##[group]Getting Git version info
+build	Checkout	2026-02-26T21:18:35.2349433Z Working directory is '/home/runner/work/kernel_build_action/kernel_build_action'
+build	Checkout	2026-02-26T21:18:35.2351878Z [command]/usr/bin/git version
+build	Checkout	2026-02-26T21:18:35.2433627Z git version 2.53.0
+build	Checkout	2026-02-26T21:18:35.2461124Z ##[endgroup]
+build	Checkout	2026-02-26T21:18:35.2477342Z Temporarily overriding HOME='/home/runner/work/_temp/ee610fa2-2d22-4e1e-bec0-4f662758f416' before making global git config changes
+build	Checkout	2026-02-26T21:18:35.2480153Z Adding repository directory to the temporary git global config as a safe directory
+build	Checkout	2026-02-26T21:18:35.2492487Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/kernel_build_action/kernel_build_action
+build	Checkout	2026-02-26T21:18:35.2535386Z Deleting the contents of '/home/runner/work/kernel_build_action/kernel_build_action'
+build	Checkout	2026-02-26T21:18:35.2539161Z ##[group]Initializing the repository
+build	Checkout	2026-02-26T21:18:35.2544616Z [command]/usr/bin/git init /home/runner/work/kernel_build_action/kernel_build_action
+build	Checkout	2026-02-26T21:18:35.2662396Z hint: Using 'master' as the name for the initial branch. This default branch name
+build	Checkout	2026-02-26T21:18:35.2663889Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+build	Checkout	2026-02-26T21:18:35.2664904Z hint: to use in all of your new repositories, which will suppress this warning,
+build	Checkout	2026-02-26T21:18:35.2666499Z hint: call:
+build	Checkout	2026-02-26T21:18:35.2667238Z hint:
+build	Checkout	2026-02-26T21:18:35.2668026Z hint: 	git config --global init.defaultBranch <name>
+build	Checkout	2026-02-26T21:18:35.2669267Z hint:
+build	Checkout	2026-02-26T21:18:35.2670439Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+build	Checkout	2026-02-26T21:18:35.2672394Z hint: 'development'. The just-created branch can be renamed via this command:
+build	Checkout	2026-02-26T21:18:35.2673954Z hint:
+build	Checkout	2026-02-26T21:18:35.2674765Z hint: 	git branch -m <name>
+build	Checkout	2026-02-26T21:18:35.2675644Z hint:
+build	Checkout	2026-02-26T21:18:35.2677041Z hint: Disable this message with "git config set advice.defaultBranchName false"
+build	Checkout	2026-02-26T21:18:35.2679369Z Initialized empty Git repository in /home/runner/work/kernel_build_action/kernel_build_action/.git/
+build	Checkout	2026-02-26T21:18:35.2683184Z [command]/usr/bin/git remote add origin https://github.com/prairierangellc-netizen/kernel_build_action
+build	Checkout	2026-02-26T21:18:35.2719266Z ##[endgroup]
+build	Checkout	2026-02-26T21:18:35.2720625Z ##[group]Disabling automatic garbage collection
+build	Checkout	2026-02-26T21:18:35.2724497Z [command]/usr/bin/git config --local gc.auto 0
+build	Checkout	2026-02-26T21:18:35.2755302Z ##[endgroup]
+build	Checkout	2026-02-26T21:18:35.2756935Z ##[group]Setting up auth
+build	Checkout	2026-02-26T21:18:35.2763552Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+build	Checkout	2026-02-26T21:18:35.2796494Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+build	Checkout	2026-02-26T21:18:35.3172676Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+build	Checkout	2026-02-26T21:18:35.3204730Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+build	Checkout	2026-02-26T21:18:35.3437350Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+build	Checkout	2026-02-26T21:18:35.3470012Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+build	Checkout	2026-02-26T21:18:35.3719986Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+build	Checkout	2026-02-26T21:18:35.3760342Z ##[endgroup]
+build	Checkout	2026-02-26T21:18:35.3761873Z ##[group]Fetching the repository
+build	Checkout	2026-02-26T21:18:35.3770518Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +e5893346a39f87ee976b82e1ebb004e456016311:refs/remotes/origin/main
+build	Checkout	2026-02-26T21:18:35.9371783Z From https://github.com/prairierangellc-netizen/kernel_build_action
+build	Checkout	2026-02-26T21:18:35.9374325Z  * [new ref]         e5893346a39f87ee976b82e1ebb004e456016311 -> origin/main
+build	Checkout	2026-02-26T21:18:35.9412068Z ##[endgroup]
+build	Checkout	2026-02-26T21:18:35.9414129Z ##[group]Determining the checkout info
+build	Checkout	2026-02-26T21:18:35.9416636Z ##[endgroup]
+build	Checkout	2026-02-26T21:18:35.9421099Z [command]/usr/bin/git sparse-checkout disable
+build	Checkout	2026-02-26T21:18:35.9473961Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+build	Checkout	2026-02-26T21:18:35.9503534Z ##[group]Checking out the ref
+build	Checkout	2026-02-26T21:18:35.9507442Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+build	Checkout	2026-02-26T21:18:35.9779820Z Switched to a new branch 'main'
+build	Checkout	2026-02-26T21:18:35.9782134Z branch 'main' set up to track 'origin/main'.
+build	Checkout	2026-02-26T21:18:35.9791376Z ##[endgroup]
+build	Checkout	2026-02-26T21:18:35.9829437Z [command]/usr/bin/git log -1 --format=%H
+build	Checkout	2026-02-26T21:18:35.9853545Z e5893346a39f87ee976b82e1ebb004e456016311
+build	Build Kernel	﻿2026-02-26T21:18:36.0335993Z ##[group]Run dabao1955/kernel_build_action@main
+build	Build Kernel	2026-02-26T21:18:36.0337685Z with:
+build	Build Kernel	2026-02-26T21:18:36.0338879Z   kernel-url: https://github.com/MotorolaMobilityLLC/kernel-msm
+build	Build Kernel	2026-02-26T21:18:36.0340391Z   kernel-branch: mmi-U2UBS34.44-57-8-7
+build	Build Kernel	2026-02-26T21:18:36.0341479Z   config: pstar_defconfig
+build	Build Kernel	2026-02-26T21:18:36.0342372Z   arch: arm64
+build	Build Kernel	2026-02-26T21:18:36.0343121Z   aosp-clang: false
+build	Build Kernel	2026-02-26T21:18:36.0345591Z   other-clang-url: https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/tags/android-cts-11.0_r1/clang-r383902.tar.gz
+build	Build Kernel	2026-02-26T21:18:36.0348484Z   ksu: true
+build	Build Kernel	2026-02-26T21:18:36.0349217Z   kernel-dir: kernel
+build	Build Kernel	2026-02-26T21:18:36.0350008Z   depth: 1
+build	Build Kernel	2026-02-26T21:18:36.0350746Z   vendor: false
+build	Build Kernel	2026-02-26T21:18:36.0351512Z   vendor-branch: main
+build	Build Kernel	2026-02-26T21:18:36.0352341Z   vendor-dir: vendor
+build	Build Kernel	2026-02-26T21:18:36.0353179Z   aosp-clang-version: r383902
+build	Build Kernel	2026-02-26T21:18:36.0354122Z   aosp-gcc: false
+build	Build Kernel	2026-02-26T21:18:36.0354930Z   other-clang-branch: main
+build	Build Kernel	2026-02-26T21:18:36.0355899Z   other-gcc64-branch: main
+build	Build Kernel	2026-02-26T21:18:36.0356932Z   other-gcc32-branch: main
+build	Build Kernel	2026-02-26T21:18:36.0357824Z   ksu-version: main
+build	Build Kernel	2026-02-26T21:18:36.0358609Z   ksu-lkm: false
+build	Build Kernel	2026-02-26T21:18:36.0359375Z   ksu-other: false
+build	Build Kernel	2026-02-26T21:18:36.0360161Z   rekernel: false
+build	Build Kernel	2026-02-26T21:18:36.0360947Z   nethunter: false
+build	Build Kernel	2026-02-26T21:18:36.0361754Z   nethunter-patch: false
+build	Build Kernel	2026-02-26T21:18:36.0362626Z   lxc: false
+build	Build Kernel	2026-02-26T21:18:36.0363357Z   lxc-patch: false
+build	Build Kernel	2026-02-26T21:18:36.0364153Z   kvm: false
+build	Build Kernel	2026-02-26T21:18:36.0364868Z   bbg: false
+build	Build Kernel	2026-02-26T21:18:36.0365599Z   disable-lto: false
+build	Build Kernel	2026-02-26T21:18:36.0366494Z   ccache: false
+build	Build Kernel	2026-02-26T21:18:36.0367263Z   anykernel3: false
+build	Build Kernel	2026-02-26T21:18:36.0368054Z   release: false
+build	Build Kernel	2026-02-26T21:18:36.0368828Z   extra-make-args: []
+build	Build Kernel	2026-02-26T21:18:36.0369642Z ##[endgroup]
+build	Build Kernel	2026-02-26T21:18:36.1893069Z ##[group]Installing dependency packages
+build	Build Kernel	2026-02-26T21:18:36.1931648Z [command]/usr/bin/sudo apt-get update
+build	Build Kernel	2026-02-26T21:18:36.2958935Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+build	Build Kernel	2026-02-26T21:18:36.3247008Z Hit:6 https://packages.microsoft.com/repos/azure-cli noble InRelease
+build	Build Kernel	2026-02-26T21:18:36.3250710Z Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+build	Build Kernel	2026-02-26T21:18:36.3256954Z Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+build	Build Kernel	2026-02-26T21:18:36.3276475Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+build	Build Kernel	2026-02-26T21:18:36.3391574Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+build	Build Kernel	2026-02-26T21:18:36.3540540Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+build	Build Kernel	2026-02-26T21:18:36.5151591Z Get:8 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [96.1 kB]
+build	Build Kernel	2026-02-26T21:18:36.5280153Z Get:9 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [11.4 kB]
+build	Build Kernel	2026-02-26T21:18:36.5312894Z Get:10 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [74.9 kB]
+build	Build Kernel	2026-02-26T21:18:36.5669260Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1800 kB]
+build	Build Kernel	2026-02-26T21:18:36.5778441Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [331 kB]
+build	Build Kernel	2026-02-26T21:18:36.5808837Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [175 kB]
+build	Build Kernel	2026-02-26T21:18:36.5830748Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 c-n-f Metadata [16.5 kB]
+build	Build Kernel	2026-02-26T21:18:36.5842747Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1558 kB]
+build	Build Kernel	2026-02-26T21:18:36.5952953Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [316 kB]
+build	Build Kernel	2026-02-26T21:18:36.5982610Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [386 kB]
+build	Build Kernel	2026-02-26T21:18:36.6012452Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 c-n-f Metadata [32.7 kB]
+build	Build Kernel	2026-02-26T21:18:36.6024243Z Get:19 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [2735 kB]
+build	Build Kernel	2026-02-26T21:18:36.6164415Z Get:20 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [630 kB]
+build	Build Kernel	2026-02-26T21:18:36.6655867Z Get:21 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Components [212 B]
+build	Build Kernel	2026-02-26T21:18:36.6663601Z Get:22 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
+build	Build Kernel	2026-02-26T21:18:36.6673268Z Get:23 http://azure.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [7292 B]
+build	Build Kernel	2026-02-26T21:18:36.6684824Z Get:24 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [10.5 kB]
+build	Build Kernel	2026-02-26T21:18:36.6697218Z Get:25 http://azure.archive.ubuntu.com/ubuntu noble-backports/restricted amd64 Components [216 B]
+build	Build Kernel	2026-02-26T21:18:36.6706499Z Get:26 http://azure.archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Components [212 B]
+build	Build Kernel	2026-02-26T21:18:36.6912246Z Get:27 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [1494 kB]
+build	Build Kernel	2026-02-26T21:18:36.7004865Z Get:28 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [240 kB]
+build	Build Kernel	2026-02-26T21:18:36.7031519Z Get:29 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Components [21.5 kB]
+build	Build Kernel	2026-02-26T21:18:36.7044667Z Get:30 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 c-n-f Metadata [9932 B]
+build	Build Kernel	2026-02-26T21:18:36.7054122Z Get:31 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [961 kB]
+build	Build Kernel	2026-02-26T21:18:36.7114132Z Get:32 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [218 kB]
+build	Build Kernel	2026-02-26T21:18:36.7161021Z Get:33 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Components [74.2 kB]
+build	Build Kernel	2026-02-26T21:18:36.7177063Z Get:34 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [20.1 kB]
+build	Build Kernel	2026-02-26T21:18:36.7711181Z Get:35 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [2568 kB]
+build	Build Kernel	2026-02-26T21:18:36.7845211Z Get:36 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [596 kB]
+build	Build Kernel	2026-02-26T21:18:36.7904040Z Get:37 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Components [212 B]
+build	Build Kernel	2026-02-26T21:18:36.7921889Z Get:38 http://azure.archive.ubuntu.com/ubuntu noble-security/multiverse amd64 Components [208 B]
+build	Build Kernel	2026-02-26T21:18:42.0863679Z Fetched 14.8 MB in 2s (8331 kB/s)
+build	Build Kernel	2026-02-26T21:18:42.8375949Z Reading package lists...
+build	Build Kernel	2026-02-26T21:18:42.8528392Z [command]/usr/bin/sudo apt-get install --no-install-recommends -y binutils git make bc bison openssl curl zip kmod cpio flex libelf-dev libssl-dev libtfm-dev libc6-dev device-tree-compiler ca-certificates python3 xz-utils aria2 build-essential ccache pigz parallel jq opam libpcre3-dev
+build	Build Kernel	2026-02-26T21:18:42.8769963Z Reading package lists...
+build	Build Kernel	2026-02-26T21:18:43.0310609Z Building dependency tree...
+build	Build Kernel	2026-02-26T21:18:43.0317704Z Reading state information...
+build	Build Kernel	2026-02-26T21:18:43.1851195Z binutils is already the newest version (2.42-4ubuntu2.8).
+build	Build Kernel	2026-02-26T21:18:43.1852160Z git is already the newest version (1:2.53.0-0ppa1~ubuntu24.04.1).
+build	Build Kernel	2026-02-26T21:18:43.1852918Z git set to manually installed.
+build	Build Kernel	2026-02-26T21:18:43.1853520Z make is already the newest version (4.3-4.1build2).
+build	Build Kernel	2026-02-26T21:18:43.1854179Z bc is already the newest version (1.07.1-3ubuntu4).
+build	Build Kernel	2026-02-26T21:18:43.1854771Z bc set to manually installed.
+build	Build Kernel	2026-02-26T21:18:43.1855444Z bison is already the newest version (2:3.8.2+dfsg-1build2).
+build	Build Kernel	2026-02-26T21:18:43.1856665Z openssl is already the newest version (3.0.13-0ubuntu3.7).
+build	Build Kernel	2026-02-26T21:18:43.1857557Z zip is already the newest version (3.0-13ubuntu0.2).
+build	Build Kernel	2026-02-26T21:18:43.1860412Z kmod is already the newest version (31+20240202-2ubuntu7.1).
+build	Build Kernel	2026-02-26T21:18:43.1861552Z kmod set to manually installed.
+build	Build Kernel	2026-02-26T21:18:43.1862280Z cpio is already the newest version (2.15+dfsg-1ubuntu2).
+build	Build Kernel	2026-02-26T21:18:43.1863067Z cpio set to manually installed.
+build	Build Kernel	2026-02-26T21:18:43.1864087Z flex is already the newest version (2.6.4-8.2build1).
+build	Build Kernel	2026-02-26T21:18:43.1865062Z libssl-dev is already the newest version (3.0.13-0ubuntu3.7).
+build	Build Kernel	2026-02-26T21:18:43.1866029Z libc6-dev is already the newest version (2.39-0ubuntu8.7).
+build	Build Kernel	2026-02-26T21:18:43.1866963Z libc6-dev set to manually installed.
+build	Build Kernel	2026-02-26T21:18:43.1867459Z ca-certificates is already the newest version (20240203).
+build	Build Kernel	2026-02-26T21:18:43.1868098Z python3 is already the newest version (3.12.3-0ubuntu2.1).
+build	Build Kernel	2026-02-26T21:18:43.1868814Z xz-utils is already the newest version (5.6.1+really5.4.5-1ubuntu0.2).
+build	Build Kernel	2026-02-26T21:18:43.1869552Z aria2 is already the newest version (1.37.0+debian-1build3).
+build	Build Kernel	2026-02-26T21:18:43.1870098Z pigz is already the newest version (2.8-1).
+build	Build Kernel	2026-02-26T21:18:43.1870637Z parallel is already the newest version (20231122+ds-1).
+build	Build Kernel	2026-02-26T21:18:43.1871227Z jq is already the newest version (1.7.1-3ubuntu0.24.04.1).
+build	Build Kernel	2026-02-26T21:18:43.1871805Z The following additional packages will be installed:
+build	Build Kernel	2026-02-26T21:18:43.1872530Z   bubblewrap libamd3 libcolamd3 libcurl3t64-gnutls libcurl4t64 libfdt1
+build	Build Kernel	2026-02-26T21:18:43.1873389Z   libglpk40 libhiredis1.1.0 libpcre16-3 libpcre3 libpcre32-3 libpcrecpp0v5
+build	Build Kernel	2026-02-26T21:18:43.1874078Z   libsuitesparseconfig7 libtfm1 opam-installer
+build	Build Kernel	2026-02-26T21:18:43.1874577Z Suggested packages:
+build	Build Kernel	2026-02-26T21:18:43.1875060Z   distcc | icecc libiodbc2-dev default-libmysqlclient-dev opam-doc
+build	Build Kernel	2026-02-26T21:18:43.1875672Z Recommended packages:
+build	Build Kernel	2026-02-26T21:18:43.1875991Z   ocaml darcs
+build	Build Kernel	2026-02-26T21:18:43.2113662Z The following NEW packages will be installed:
+build	Build Kernel	2026-02-26T21:18:43.2114639Z   bubblewrap build-essential ccache device-tree-compiler libamd3 libcolamd3
+build	Build Kernel	2026-02-26T21:18:43.2115544Z   libelf-dev libfdt1 libglpk40 libhiredis1.1.0 libpcre16-3 libpcre3
+build	Build Kernel	2026-02-26T21:18:43.2118252Z   libpcre3-dev libpcre32-3 libpcrecpp0v5 libsuitesparseconfig7 libtfm-dev
+build	Build Kernel	2026-02-26T21:18:43.2120925Z   libtfm1 opam opam-installer
+build	Build Kernel	2026-02-26T21:18:43.2124456Z The following packages will be upgraded:
+build	Build Kernel	2026-02-26T21:18:43.2131054Z   curl libcurl3t64-gnutls libcurl4t64
+build	Build Kernel	2026-02-26T21:18:43.2300256Z 3 upgraded, 20 newly installed, 0 to remove and 29 not upgraded.
+build	Build Kernel	2026-02-26T21:18:43.2300880Z Need to get 7436 kB of archives.
+build	Build Kernel	2026-02-26T21:18:43.2301427Z After this operation, 22.5 MB of additional disk space will be used.
+build	Build Kernel	2026-02-26T21:18:43.2301825Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+build	Build Kernel	2026-02-26T21:18:43.2799170Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 bubblewrap amd64 0.9.0-1ubuntu0.1 [50.2 kB]
+build	Build Kernel	2026-02-26T21:18:43.3164293Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 build-essential amd64 12.10ubuntu1 [4928 B]
+build	Build Kernel	2026-02-26T21:18:43.3505705Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 libhiredis1.1.0 amd64 1.2.0-6ubuntu3 [41.4 kB]
+build	Build Kernel	2026-02-26T21:18:43.3852655Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 ccache amd64 4.9.1-1 [592 kB]
+build	Build Kernel	2026-02-26T21:18:43.4264496Z Get:6 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 curl amd64 8.5.0-2ubuntu10.7 [227 kB]
+build	Build Kernel	2026-02-26T21:18:43.4781110Z Get:7 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libcurl4t64 amd64 8.5.0-2ubuntu10.7 [342 kB]
+build	Build Kernel	2026-02-26T21:18:43.5153483Z Get:8 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libsuitesparseconfig7 amd64 1:7.6.1+dfsg-1build1 [12.9 kB]
+build	Build Kernel	2026-02-26T21:18:43.5498378Z Get:9 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 libamd3 amd64 1:7.6.1+dfsg-1build1 [27.2 kB]
+build	Build Kernel	2026-02-26T21:18:43.5841326Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libcolamd3 amd64 1:7.6.1+dfsg-1build1 [19.4 kB]
+build	Build Kernel	2026-02-26T21:18:43.6317941Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libcurl3t64-gnutls amd64 8.5.0-2ubuntu10.7 [334 kB]
+build	Build Kernel	2026-02-26T21:18:43.6682838Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libelf-dev amd64 0.190-1.1ubuntu0.1 [68.5 kB]
+build	Build Kernel	2026-02-26T21:18:43.7037811Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 libglpk40 amd64 5.0-1build2 [369 kB]
+build	Build Kernel	2026-02-26T21:18:43.7566962Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 libpcre16-3 amd64 2:8.39-15build1 [165 kB]
+build	Build Kernel	2026-02-26T21:18:43.7929104Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 libpcre3 amd64 2:8.39-15build1 [248 kB]
+build	Build Kernel	2026-02-26T21:18:43.8298991Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 libpcre32-3 amd64 2:8.39-15build1 [155 kB]
+build	Build Kernel	2026-02-26T21:18:43.8649712Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 libpcrecpp0v5 amd64 2:8.39-15build1 [16.2 kB]
+build	Build Kernel	2026-02-26T21:18:43.8994708Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 libpcre3-dev amd64 2:8.39-15build1 [584 kB]
+build	Build Kernel	2026-02-26T21:18:43.9408216Z Get:19 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 libtfm1 amd64 0.13.1-1 [85.2 kB]
+build	Build Kernel	2026-02-26T21:18:44.0187793Z Get:20 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 libtfm-dev amd64 0.13.1-1 [6322 B]
+build	Build Kernel	2026-02-26T21:18:44.0537534Z Get:21 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 opam-installer amd64 2.1.5-1 [1256 kB]
+build	Build Kernel	2026-02-26T21:18:44.1023590Z Get:22 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 opam amd64 2.1.5-1 [2584 kB]
+build	Build Kernel	2026-02-26T21:18:44.1643829Z Get:23 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libfdt1 amd64 1.7.0-2build1 [20.1 kB]
+build	Build Kernel	2026-02-26T21:18:44.1987321Z Get:24 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 device-tree-compiler amd64 1.7.0-2build1 [228 kB]
+build	Build Kernel	2026-02-26T21:18:44.4575869Z Fetched 7436 kB in 1s (7577 kB/s)
+build	Build Kernel	2026-02-26T21:18:44.4808603Z Selecting previously unselected package bubblewrap.
+build	Build Kernel	2026-02-26T21:18:44.5123595Z (Reading database ... 
+build	Build Kernel	2026-02-26T21:18:44.5124012Z (Reading database ... 5%
+build	Build Kernel	2026-02-26T21:18:44.5124439Z (Reading database ... 10%
+build	Build Kernel	2026-02-26T21:18:44.5124814Z (Reading database ... 15%
+build	Build Kernel	2026-02-26T21:18:44.5125190Z (Reading database ... 20%
+build	Build Kernel	2026-02-26T21:18:44.5125562Z (Reading database ... 25%
+build	Build Kernel	2026-02-26T21:18:44.5125926Z (Reading database ... 30%
+build	Build Kernel	2026-02-26T21:18:44.5126493Z (Reading database ... 35%
+build	Build Kernel	2026-02-26T21:18:44.5127016Z (Reading database ... 40%
+build	Build Kernel	2026-02-26T21:18:44.5127440Z (Reading database ... 45%
+build	Build Kernel	2026-02-26T21:18:44.5127765Z (Reading database ... 50%
+build	Build Kernel	2026-02-26T21:18:44.5244825Z (Reading database ... 55%
+build	Build Kernel	2026-02-26T21:18:44.5767669Z (Reading database ... 60%
+build	Build Kernel	2026-02-26T21:18:44.6159758Z (Reading database ... 65%
+build	Build Kernel	2026-02-26T21:18:44.6648963Z (Reading database ... 70%
+build	Build Kernel	2026-02-26T21:18:44.7263095Z (Reading database ... 75%
+build	Build Kernel	2026-02-26T21:18:44.8571514Z (Reading database ... 80%
+build	Build Kernel	2026-02-26T21:18:44.9597515Z (Reading database ... 85%
+build	Build Kernel	2026-02-26T21:18:45.1221810Z (Reading database ... 90%
+build	Build Kernel	2026-02-26T21:18:45.2197925Z (Reading database ... 95%
+build	Build Kernel	2026-02-26T21:18:45.2198535Z (Reading database ... 100%
+build	Build Kernel	2026-02-26T21:18:45.2199266Z (Reading database ... 218749 files and directories currently installed.)
+build	Build Kernel	2026-02-26T21:18:45.2240881Z Preparing to unpack .../00-bubblewrap_0.9.0-1ubuntu0.1_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:45.2271202Z Unpacking bubblewrap (0.9.0-1ubuntu0.1) ...
+build	Build Kernel	2026-02-26T21:18:45.2578594Z Selecting previously unselected package build-essential.
+build	Build Kernel	2026-02-26T21:18:45.2734564Z Preparing to unpack .../01-build-essential_12.10ubuntu1_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:45.2746745Z Unpacking build-essential (12.10ubuntu1) ...
+build	Build Kernel	2026-02-26T21:18:45.2986869Z Selecting previously unselected package libhiredis1.1.0:amd64.
+build	Build Kernel	2026-02-26T21:18:45.3142059Z Preparing to unpack .../02-libhiredis1.1.0_1.2.0-6ubuntu3_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:45.3166799Z Unpacking libhiredis1.1.0:amd64 (1.2.0-6ubuntu3) ...
+build	Build Kernel	2026-02-26T21:18:45.3399246Z Selecting previously unselected package ccache.
+build	Build Kernel	2026-02-26T21:18:45.3552862Z Preparing to unpack .../03-ccache_4.9.1-1_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:45.3563781Z Unpacking ccache (4.9.1-1) ...
+build	Build Kernel	2026-02-26T21:18:45.4082532Z Preparing to unpack .../04-curl_8.5.0-2ubuntu10.7_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:45.4111344Z Unpacking curl (8.5.0-2ubuntu10.7) over (8.5.0-2ubuntu10.6) ...
+build	Build Kernel	2026-02-26T21:18:45.4571015Z Preparing to unpack .../05-libcurl4t64_8.5.0-2ubuntu10.7_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:45.4647479Z Unpacking libcurl4t64:amd64 (8.5.0-2ubuntu10.7) over (8.5.0-2ubuntu10.6) ...
+build	Build Kernel	2026-02-26T21:18:45.4936532Z Selecting previously unselected package libsuitesparseconfig7:amd64.
+build	Build Kernel	2026-02-26T21:18:45.5093921Z Preparing to unpack .../06-libsuitesparseconfig7_1%3a7.6.1+dfsg-1build1_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:45.5106131Z Unpacking libsuitesparseconfig7:amd64 (1:7.6.1+dfsg-1build1) ...
+build	Build Kernel	2026-02-26T21:18:45.5335943Z Selecting previously unselected package libamd3:amd64.
+build	Build Kernel	2026-02-26T21:18:45.5487856Z Preparing to unpack .../07-libamd3_1%3a7.6.1+dfsg-1build1_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:45.5499821Z Unpacking libamd3:amd64 (1:7.6.1+dfsg-1build1) ...
+build	Build Kernel	2026-02-26T21:18:45.5746136Z Selecting previously unselected package libcolamd3:amd64.
+build	Build Kernel	2026-02-26T21:18:45.5897156Z Preparing to unpack .../08-libcolamd3_1%3a7.6.1+dfsg-1build1_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:45.5910430Z Unpacking libcolamd3:amd64 (1:7.6.1+dfsg-1build1) ...
+build	Build Kernel	2026-02-26T21:18:45.6287035Z Preparing to unpack .../09-libcurl3t64-gnutls_8.5.0-2ubuntu10.7_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:45.6365530Z Unpacking libcurl3t64-gnutls:amd64 (8.5.0-2ubuntu10.7) over (8.5.0-2ubuntu10.6) ...
+build	Build Kernel	2026-02-26T21:18:45.6690113Z Selecting previously unselected package libelf-dev:amd64.
+build	Build Kernel	2026-02-26T21:18:45.6841240Z Preparing to unpack .../10-libelf-dev_0.190-1.1ubuntu0.1_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:45.6853101Z Unpacking libelf-dev:amd64 (0.190-1.1ubuntu0.1) ...
+build	Build Kernel	2026-02-26T21:18:45.7143349Z Selecting previously unselected package libglpk40:amd64.
+build	Build Kernel	2026-02-26T21:18:45.7292814Z Preparing to unpack .../11-libglpk40_5.0-1build2_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:45.7307361Z Unpacking libglpk40:amd64 (5.0-1build2) ...
+build	Build Kernel	2026-02-26T21:18:45.7574349Z Selecting previously unselected package libpcre16-3:amd64.
+build	Build Kernel	2026-02-26T21:18:45.7769766Z Preparing to unpack .../12-libpcre16-3_2%3a8.39-15build1_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:45.7818197Z Unpacking libpcre16-3:amd64 (2:8.39-15build1) ...
+build	Build Kernel	2026-02-26T21:18:45.8075203Z Selecting previously unselected package libpcre3:amd64.
+build	Build Kernel	2026-02-26T21:18:45.8230344Z Preparing to unpack .../13-libpcre3_2%3a8.39-15build1_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:45.8243299Z Unpacking libpcre3:amd64 (2:8.39-15build1) ...
+build	Build Kernel	2026-02-26T21:18:45.8511496Z Selecting previously unselected package libpcre32-3:amd64.
+build	Build Kernel	2026-02-26T21:18:45.8663710Z Preparing to unpack .../14-libpcre32-3_2%3a8.39-15build1_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:45.8673139Z Unpacking libpcre32-3:amd64 (2:8.39-15build1) ...
+build	Build Kernel	2026-02-26T21:18:45.8936197Z Selecting previously unselected package libpcrecpp0v5:amd64.
+build	Build Kernel	2026-02-26T21:18:45.9084335Z Preparing to unpack .../15-libpcrecpp0v5_2%3a8.39-15build1_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:45.9094352Z Unpacking libpcrecpp0v5:amd64 (2:8.39-15build1) ...
+build	Build Kernel	2026-02-26T21:18:45.9307881Z Selecting previously unselected package libpcre3-dev:amd64.
+build	Build Kernel	2026-02-26T21:18:45.9455688Z Preparing to unpack .../16-libpcre3-dev_2%3a8.39-15build1_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:45.9468650Z Unpacking libpcre3-dev:amd64 (2:8.39-15build1) ...
+build	Build Kernel	2026-02-26T21:18:45.9945171Z Selecting previously unselected package libtfm1:amd64.
+build	Build Kernel	2026-02-26T21:18:46.0096742Z Preparing to unpack .../17-libtfm1_0.13.1-1_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:46.0108772Z Unpacking libtfm1:amd64 (0.13.1-1) ...
+build	Build Kernel	2026-02-26T21:18:46.0342147Z Selecting previously unselected package libtfm-dev:amd64.
+build	Build Kernel	2026-02-26T21:18:46.0494541Z Preparing to unpack .../18-libtfm-dev_0.13.1-1_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:46.0506146Z Unpacking libtfm-dev:amd64 (0.13.1-1) ...
+build	Build Kernel	2026-02-26T21:18:46.0721107Z Selecting previously unselected package opam-installer.
+build	Build Kernel	2026-02-26T21:18:46.0877163Z Preparing to unpack .../19-opam-installer_2.1.5-1_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:46.0888096Z Unpacking opam-installer (2.1.5-1) ...
+build	Build Kernel	2026-02-26T21:18:46.1334557Z Selecting previously unselected package opam.
+build	Build Kernel	2026-02-26T21:18:46.1492635Z Preparing to unpack .../20-opam_2.1.5-1_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:46.1563965Z Unpacking opam (2.1.5-1) ...
+build	Build Kernel	2026-02-26T21:18:46.2156902Z Selecting previously unselected package libfdt1:amd64.
+build	Build Kernel	2026-02-26T21:18:46.2319268Z Preparing to unpack .../21-libfdt1_1.7.0-2build1_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:46.2333770Z Unpacking libfdt1:amd64 (1.7.0-2build1) ...
+build	Build Kernel	2026-02-26T21:18:46.2554066Z Selecting previously unselected package device-tree-compiler.
+build	Build Kernel	2026-02-26T21:18:46.2716593Z Preparing to unpack .../22-device-tree-compiler_1.7.0-2build1_amd64.deb ...
+build	Build Kernel	2026-02-26T21:18:46.2726676Z Unpacking device-tree-compiler (1.7.0-2build1) ...
+build	Build Kernel	2026-02-26T21:18:46.3252640Z Setting up bubblewrap (0.9.0-1ubuntu0.1) ...
+build	Build Kernel	2026-02-26T21:18:46.3306776Z Setting up libpcre16-3:amd64 (2:8.39-15build1) ...
+build	Build Kernel	2026-02-26T21:18:46.3333215Z Setting up libcurl4t64:amd64 (8.5.0-2ubuntu10.7) ...
+build	Build Kernel	2026-02-26T21:18:46.3373781Z Setting up libtfm1:amd64 (0.13.1-1) ...
+build	Build Kernel	2026-02-26T21:18:46.3401795Z Setting up libcurl3t64-gnutls:amd64 (8.5.0-2ubuntu10.7) ...
+build	Build Kernel	2026-02-26T21:18:46.3429290Z Setting up libfdt1:amd64 (1.7.0-2build1) ...
+build	Build Kernel	2026-02-26T21:18:46.3460387Z Setting up libtfm-dev:amd64 (0.13.1-1) ...
+build	Build Kernel	2026-02-26T21:18:46.3494630Z Setting up libpcre3:amd64 (2:8.39-15build1) ...
+build	Build Kernel	2026-02-26T21:18:46.3524994Z Setting up libpcre32-3:amd64 (2:8.39-15build1) ...
+build	Build Kernel	2026-02-26T21:18:46.3553792Z Setting up libelf-dev:amd64 (0.190-1.1ubuntu0.1) ...
+build	Build Kernel	2026-02-26T21:18:46.3582453Z Setting up device-tree-compiler (1.7.0-2build1) ...
+build	Build Kernel	2026-02-26T21:18:46.3617029Z Setting up opam-installer (2.1.5-1) ...
+build	Build Kernel	2026-02-26T21:18:46.3644699Z Setting up build-essential (12.10ubuntu1) ...
+build	Build Kernel	2026-02-26T21:18:46.3675460Z Setting up libsuitesparseconfig7:amd64 (1:7.6.1+dfsg-1build1) ...
+build	Build Kernel	2026-02-26T21:18:46.3704047Z Setting up curl (8.5.0-2ubuntu10.7) ...
+build	Build Kernel	2026-02-26T21:18:46.3733932Z Setting up libhiredis1.1.0:amd64 (1.2.0-6ubuntu3) ...
+build	Build Kernel	2026-02-26T21:18:46.3760129Z Setting up libpcrecpp0v5:amd64 (2:8.39-15build1) ...
+build	Build Kernel	2026-02-26T21:18:46.3791003Z Setting up libamd3:amd64 (1:7.6.1+dfsg-1build1) ...
+build	Build Kernel	2026-02-26T21:18:46.3823687Z Setting up libcolamd3:amd64 (1:7.6.1+dfsg-1build1) ...
+build	Build Kernel	2026-02-26T21:18:46.3855219Z Setting up libpcre3-dev:amd64 (2:8.39-15build1) ...
+build	Build Kernel	2026-02-26T21:18:46.3885119Z Setting up ccache (4.9.1-1) ...
+build	Build Kernel	2026-02-26T21:18:46.3916598Z Updating symlinks in /usr/lib/ccache ...
+build	Build Kernel	2026-02-26T21:18:46.4063353Z Setting up libglpk40:amd64 (5.0-1build2) ...
+build	Build Kernel	2026-02-26T21:18:46.4090210Z Setting up opam (2.1.5-1) ...
+build	Build Kernel	2026-02-26T21:18:46.4175434Z Processing triggers for man-db (2.12.0-4build2) ...
+build	Build Kernel	2026-02-26T21:18:46.4199941Z Not building database; man-db/auto-update is not 'true'.
+build	Build Kernel	2026-02-26T21:18:46.4214684Z Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
+build	Build Kernel	2026-02-26T21:18:47.1191825Z 
+build	Build Kernel	2026-02-26T21:18:47.1192467Z Running kernel seems to be up-to-date.
+build	Build Kernel	2026-02-26T21:18:47.1193073Z 
+build	Build Kernel	2026-02-26T21:18:47.1193376Z Restarting services...
+build	Build Kernel	2026-02-26T21:18:47.1377774Z  systemctl restart packagekit.service php8.3-fpm.service
+build	Build Kernel	2026-02-26T21:18:47.2599652Z 
+build	Build Kernel	2026-02-26T21:18:47.2600113Z No containers need to be restarted.
+build	Build Kernel	2026-02-26T21:18:47.2600490Z 
+build	Build Kernel	2026-02-26T21:18:47.2600643Z No user sessions are running outdated binaries.
+build	Build Kernel	2026-02-26T21:18:47.2600856Z 
+build	Build Kernel	2026-02-26T21:18:47.2601045Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+build	Build Kernel	2026-02-26T21:18:48.1289010Z ##[endgroup]
+build	Build Kernel	2026-02-26T21:18:48.1289871Z ##[group]Downloading Third-party Clang
+build	Build Kernel	2026-02-26T21:20:28.4571611Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/clang -f clang.tar.gz
+build	Build Kernel	2026-02-26T21:20:35.2473455Z Binutils not found in clang directory. Will download AOSP GCC
+build	Build Kernel	2026-02-26T21:20:35.2474846Z ##[endgroup]
+build	Build Kernel	2026-02-26T21:20:35.2477066Z ##[group]Downloading AOSP GCC
+build	Build Kernel	2026-02-26T21:20:42.8642715Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/gcc-32 -f gcc-arm.tar.gz
+build	Build Kernel	2026-02-26T21:20:43.9533358Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/gcc-64 -f gcc-aarch64.tar.gz
+build	Build Kernel	2026-02-26T21:20:44.4579815Z ##[endgroup]
+build	Build Kernel	2026-02-26T21:20:44.4589768Z ##[group]Pulling Kernel Source
+build	Build Kernel	2026-02-26T21:20:44.4604176Z [command]/usr/bin/git clone --recursive -b mmi-U2UBS34.44-57-8-7 --depth 1 -- https://github.com/MotorolaMobilityLLC/kernel-msm kernel/kernel
+build	Build Kernel	2026-02-26T21:20:44.4631022Z Cloning into 'kernel/kernel'...
+build	Build Kernel	2026-02-26T21:20:44.7241314Z fatal: Remote branch mmi-U2UBS34.44-57-8-7 not found in upstream origin
+build	Build Kernel	2026-02-26T21:20:44.7305571Z ##[error]The process '/usr/bin/git' failed with exit code 128
+build	Post Build Kernel	﻿2026-02-26T21:20:44.7473455Z Post job cleanup.
+build	Post Build Kernel	2026-02-26T21:20:44.8060426Z Running post-action cleanup...
+build	Post Build Kernel	2026-02-26T21:20:44.8066216Z ##[group]Cleaning up
+build	Post Build Kernel	2026-02-26T21:20:44.8066833Z Cleaning build artifacts...
+build	Post Build Kernel	2026-02-26T21:20:44.8068761Z Removing kernel directory: kernel/kernel
+build	Post Build Kernel	2026-02-26T21:20:44.8075652Z Removing toolchain: /home/runner/clang
+build	Post Build Kernel	2026-02-26T21:20:45.1783991Z Removing toolchain: /home/runner/gcc-64
+build	Post Build Kernel	2026-02-26T21:20:45.2003107Z Removing toolchain: /home/runner/gcc-32
+build	Post Build Kernel	2026-02-26T21:20:45.2295002Z Detected package manager: apt
+build	Post Build Kernel	2026-02-26T21:20:45.2295439Z Clean completed!
+build	Post Build Kernel	2026-02-26T21:20:45.2297071Z ##[endgroup]
+build	Post Build Kernel	2026-02-26T21:20:45.2297374Z Cleanup completed!
+build	Post Checkout	﻿2026-02-26T21:20:45.2405263Z Post job cleanup.
+build	Post Checkout	2026-02-26T21:20:45.3364624Z [command]/usr/bin/git version
+build	Post Checkout	2026-02-26T21:20:45.3406931Z git version 2.53.0
+build	Post Checkout	2026-02-26T21:20:45.3451500Z Temporarily overriding HOME='/home/runner/work/_temp/7621ecdc-becf-414f-9ff7-989f7934de67' before making global git config changes
+build	Post Checkout	2026-02-26T21:20:45.3452869Z Adding repository directory to the temporary git global config as a safe directory
+build	Post Checkout	2026-02-26T21:20:45.3458385Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/kernel_build_action/kernel_build_action
+build	Post Checkout	2026-02-26T21:20:45.3495172Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+build	Post Checkout	2026-02-26T21:20:45.3529303Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+build	Post Checkout	2026-02-26T21:20:45.3847215Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+build	Post Checkout	2026-02-26T21:20:45.3868708Z http.https://github.com/.extraheader
+build	Post Checkout	2026-02-26T21:20:45.3882198Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+build	Post Checkout	2026-02-26T21:20:45.3913780Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+build	Post Checkout	2026-02-26T21:20:45.4146395Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+build	Post Checkout	2026-02-26T21:20:45.4178689Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+build	Complete job	﻿2026-02-26T21:20:45.4537404Z Cleaning up orphan processes
