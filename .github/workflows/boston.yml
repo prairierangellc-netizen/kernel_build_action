@@ -1,4 +1,4 @@
-name: Build Boston Kernel
+name: Boston-SusFS-Build
 on:
   workflow_dispatch:
 jobs:
