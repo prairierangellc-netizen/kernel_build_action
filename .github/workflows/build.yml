@@ -1,4 +1,4 @@
-name: Build
+name: Build Parrot Kernel + SusFS
 on:
   push:
   workflow_dispatch:
@@ -7,11 +7,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build
+
+      - name: Setup Environment
         run: |
-          git clone https://github.com/MotorolaMobilityLLC/kernel-msm --depth 1 source
           sudo apt-get update
           sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev clang lld llvm
+          git clone https://github.com/MotorolaMobilityLLC/kernel-msm --depth 1 source
+          git clone https://gitlab.com/vyt74c/susfs4ksu --depth 1 susfs
+          mkdir tc64 && git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 -b master --depth 1 tc64
+          mkdir tc32 && git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 -b master --depth 1 tc32
+
+      - name: Patch SusFS
+        run: |
+          cp susfs/kernel_patches/5.15/set_susfs.sh source/
+          cp susfs/kernel_patches/fs/susfs.c source/fs/
+          cp susfs/kernel_patches/include/linux/susfs.h source/include/linux/
           cd source
+          # Applying the specific 5.15 patches to the MSM source
+          patch -p1 < ../susfs/kernel_patches/5.15/0001-susfs-v1.5.5-to-kernel-5.15.patch || true
+
+      - name: Build Kernel
+        run: |
+          cd source
+          export PATH=$(pwd)/../tc64/bin:$(pwd)/../tc32/bin:$PATH
           make O=out ARCH=arm64 gki_defconfig
           scripts/kconfig/merge_config.sh -O out arch/arm64/configs/gki_defconfig arch/arm64/configs/vendor/parrot_GKI.config
+          make -j$(nproc) O=out ARCH=arm64 CC=clang CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-android- CROSS_COMPILE_ARM32=arm-linux-androideabi-
+
+      - name: Upload Kernel
+        uses: actions/upload-artifact@v4
+        with:
+          name: Parrot-Kernel-SusFS
+          path: source/out/arch/arm64/boot/Image
