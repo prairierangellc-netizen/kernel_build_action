@@ -1,21 +1,9 @@
-name: Build Kernel
+name: Diagnostics
 on:
   workflow_dispatch:
 jobs:
-  build:
+  debug:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Build Kernel
-        uses: dabao1955/kernel_build_action@main
-        with:
-          kernel-url: https://github.com/MotorolaMobilityLLC/kernel-msm
-          kernel-branch: MMI-U2UBS34.44-57-8-7
-          config: pstar_defconfig
-          arch: arm64
-          aosp-clang: true
-          aosp-clang-version: r450784d
-          aosp-gcc: true
-          ksu: true
-          ksu-version: main
+      - name: Check Environment
+        run: echo           curl -s https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+refs/heads/master?format=JSON | grep -oP "clang-r\d+[a-z0-9]+" | head -n 20
