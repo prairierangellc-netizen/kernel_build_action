@@ -1,0 +1,20 @@
+name: Build Kernel
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build Kernel
+        uses: dabao1955/kernel_build_action@main
+        with:
+          kernel-url: https://github.com/MotorolaMobilityLLC/kernel-msm
+          kernel-branch: MMI-U2UBS34.44-57-8-7
+          config: pstar_defconfig
+          arch: arm64
+          aosp-clang: true
+          aosp-clang-version: r416183b1
+          ksu: true
+          ksu-version: main
