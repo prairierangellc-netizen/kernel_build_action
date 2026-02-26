@@ -16,5 +16,6 @@ jobs:
           arch: arm64
           aosp-clang: true
           aosp-clang-version: r416183b1
+          aosp-gcc: true
           ksu: true
           ksu-version: main
