@@ -7,8 +7,10 @@ jobs:
   build: 
     runs-on: ubuntu-latest 
     steps: 
-      - name: Checkout 
+      - name: Checkout Build Repo 
         uses: actions/checkout@v4 
+      - name: Pull Motorola Source 
+        run: git clone https://github.com/MotorolaMobilityLLC/kernel-msm --depth 1 . 
       - name: Install Deps 
         run: sudo apt-get update && sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev clang lld llvm 
       - name: Toolchains 
