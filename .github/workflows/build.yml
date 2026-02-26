@@ -18,5 +18,6 @@ jobs:
           arch: arm64
           aosp-gcc: true
           aosp-clang: true
-          susfs: true
-          susfs-patch-dir: patches
+          ksu: true
+          ksu-version: main
+          extra-make-args: [ "LD=ld.lld", "LLVM=1", "LLVM_IAS=1" ]
