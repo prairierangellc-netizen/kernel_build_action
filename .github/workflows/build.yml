@@ -1,43 +1,61 @@
+$content = @'
 name: Build Parrot Kernel + SusFS
+
 on:
   push:
+    branches: [ main ]
   workflow_dispatch:
+
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+
     steps:
-      - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev clang lld llvm
-          
-      - name: Clone Source and Tools
-        run: |
-          git clone https://github.com/MotorolaMobilityLLC/kernel-msm --depth 1 source
-          git clone https://gitlab.com/vyt74c/susfs4ksu --depth 1 susfs
-          # Using a faster, pre-built GKI toolchain
-          mkdir clang && curl -L https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/clang-r450784e.tar.gz | tar -xzC clang
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev clang lld llvm
 
-      - name: Patch SusFS
-        run: |
-          cp susfs/kernel_patches/5.15/set_susfs.sh source/
-          cp susfs/kernel_patches/fs/susfs.c source/fs/
-          cp susfs/kernel_patches/include/linux/susfs.h source/include/linux/
-          cd source
-          patch -p1 < ../susfs/kernel_patches/5.15/0001-susfs-v1.5.5-to-kernel-5.15.patch || true
+    - name: Clone Source and Tools
+      run: |
+        # Optimize Git for large Motorola repo
+        git config --global http.postBuffer 524288000
+        git config --global core.compression 0
+        
+        # Clone with extreme prejudice
+        git clone https://github.com/MotorolaMobilityLLC/kernel-msm --depth 1 --single-branch source
+        git clone https://gitlab.com/vyt74c/susfs4ksu --depth 1 susfs
+        
+        # Toolchain
+        mkdir clang
+        curl -L https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/clang-r450784e.tar.gz | tar -xzC clang
 
-      - name: Build Kernel
-        run: |
-          cd source
-          export PATH=$(pwd)/../clang/bin:$PATH
-          make O=out ARCH=arm64 gki_defconfig
-          scripts/kconfig/merge_config.sh -O out arch/arm64/configs/gki_defconfig arch/arm64/configs/vendor/parrot_GKI.config
-          make -j$(nproc) O=out ARCH=arm64 CC=clang CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-android-
+    - name: Patch SusFS
+      run: |
+        cd source
+        cp ../susfs/kernel_patches/5.10/99_enable_susfs_for_ksu.patch .
+        cp ../susfs/kernel_patches/fs/susfs.c fs/
+        cp ../susfs/kernel_patches/include/linux/susfs.h include/linux/
+        patch -p1 < 99_enable_susfs_for_ksu.patch
 
-      - name: Upload Kernel
-        uses: actions/upload-artifact@v4
-        with:
-          name: Parrot-Kernel-SusFS
-          path: source/out/arch/arm64/boot/Image
+    - name: Build Kernel
+      run: |
+        export PATH=$(pwd)/clang/bin:$PATH
+        cd source
+        make O=out ARCH=arm64 vendor/parrot_defconfig
+        make -j$(nproc) O=out ARCH=arm64 \
+          CC=clang \
+          CLANG_TRIPLE=aarch64-linux-gnu- \
+          CROSS_COMPILE=aarch64-linux-gnu- \
+          LD=ld.lld
+
+    - name: Upload Kernel
+      uses: actions/upload-artifact@v4
+      with:
+        name: kernel-parrot-susfs
+        path: source/out/arch/arm64/boot/Image
+'@
+$content | Out-File -FilePath .github/workflows/build.yml -Encoding utf8
