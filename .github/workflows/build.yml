@@ -1,12 +1,11 @@
-$content = @'
-name: Build Parrot Kernel + SusFS
+name: Kernel Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   workflow_dispatch:
 
-jobs: 
+jobs:
   build:
     runs-on: ubuntu-24.04
 
@@ -17,45 +16,44 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev clang lld llvm
+        sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev clang lld llvm curl git
 
-    - name: Clone Source and Tools
+    - name: Cache Kernel Source
+      id: cache-kernel
+      uses: actions/cache@v4
+      with:
+        path: kernel
+        key: kernel-mmi-U2UBS34.44-57-8-7
+        restore-keys: |
+          kernel-mmi-
+
+    - name: Clone Motorola Source
+      if: steps.cache-kernel.outputs.cache-hit != 'true'
       run: |
-        # Optimize Git for large Motorola repo
         git config --global http.postBuffer 524288000
         git config --global core.compression 0
-        
-        # Clone with extreme prejudice
-        git clone https://github.com/MotorolaMobilityLLC/kernel-msm --depth 1 --single-branch source
-        git clone https://gitlab.com/vyt74c/susfs4ksu --depth 1 susfs
-        
-        # Toolchain
-        mkdir clang
-        curl -L https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/clang-r450784e.tar.gz | tar -xzC clang
+        git clone https://github.com/MotorolaMobilityLLC/kernel-msm --depth 1 --branch mmi-U2UBS34.44-57-8-7 kernel
 
-    - name: Patch SusFS
+    - name: Download Clang Toolchain
       run: |
-        cd source
-        cp ../susfs/kernel_patches/5.10/99_enable_susfs_for_ksu.patch .
-        cp ../susfs/kernel_patches/fs/susfs.c fs/
-        cp ../susfs/kernel_patches/include/linux/susfs.h include/linux/
-        patch -p1 < 99_enable_susfs_for_ksu.patch
+        mkdir -p clang
+        curl -L "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/tags/android-cts-11.0_r1/clang-r383902.tar.gz" | tar -xzC clang
 
     - name: Build Kernel
       run: |
         export PATH=$(pwd)/clang/bin:$PATH
-        cd source
-        make O=out ARCH=arm64 vendor/parrot_defconfig
+        cd kernel
+        # Set up the configuration for pstar
+        make O=out ARCH=arm64 pstar_defconfig
+        # Start the actual compilation
         make -j$(nproc) O=out ARCH=arm64 \
           CC=clang \
           CLANG_TRIPLE=aarch64-linux-gnu- \
           CROSS_COMPILE=aarch64-linux-gnu- \
           LD=ld.lld
 
-    - name: Upload Kernel
+    - name: Upload Image
       uses: actions/upload-artifact@v4
       with:
-        name: kernel-parrot-susfs
-        path: source/out/arch/arm64/boot/Image
-'@
-$content | Out-File -FilePath .github/workflows/build.yml -Encoding utf8
+        name: Image-pstar
+        path: kernel/out/arch/arm64/boot/Image
