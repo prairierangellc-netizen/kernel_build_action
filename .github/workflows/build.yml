@@ -1,47 +1,57 @@
 name: Kernel Build
-
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
-  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-24.04
-
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Install Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev clang lld llvm curl git libtfm-dev
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev clang lld llvm curl git libncurses-dev
 
-    - name: Clone Motorola Source
-      run: |
-        git config --global http.postBuffer 524288000
-        git config --global core.compression 0
-        git clone https://github.com/MotorolaMobilityLLC/kernel-msm --depth 1 --branch mmi-U2UBS34.44-57-8-7 kernel
+      - name: Cache Kernel Source
+        uses: actions/cache@v4
+        with:
+          path: kernel
+          key: kernel-mmi-U2UBS34.44-57-8-7
+          restore-keys: |
+            kernel-mmi-
 
-    - name: Download Clang Toolchain
-      run: |
-        mkdir -p clang
-        curl -L "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/tags/android-cts-11.0_r1/clang-r383902.tar.gz" | tar -xzC clang
+      - name: Clone Motorola Source
+        run: |
+          git config --global http.postBuffer 524288000
+          git config --global core.compression 0
+          # Corrected capitalization to MMI
+          git clone https://github.com/MotorolaMobilityLLC/kernel-msm --depth 1 --branch MMI-U2UBS34.44-57-8-7 kernel
 
-    - name: Build Kernel
-      run: |
-        export PATH=$(pwd)/clang/bin:$PATH
-        cd kernel
-        make O=out ARCH=arm64 pstar_defconfig
-        make -j$(nproc) O=out ARCH=arm64 \
-          CC=clang \
-          CLANG_TRIPLE=aarch64-linux-gnu- \
-          CROSS_COMPILE=aarch64-linux-gnu- \
-          LD=ld.lld
+      - name: Download Clang Toolchain
+        run: |
+          mkdir -p clang
+          curl -L https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r487747c.tar.gz -o clang.tar.gz
+          tar -C clang -xzf clang.tar.gz
 
-    - name: Upload Image
-      uses: actions/upload-artifact@v4
-      with:
-        name: Image-pstar
-        path: kernel/out/arch/arm64/boot/Image
+      - name: Build Kernel
+        run: |
+          cd kernel
+          export PATH=$GITHUB_WORKSPACE/clang/bin:$PATH
+          # Setup the pstar configuration
+          make O=out ARCH=arm64 vendor/pstar_defconfig
+          # Build the compressed Image.gz
+          make -j$(nproc) O=out ARCH=arm64 \
+            CC=clang \
+            CLANG_TRIPLE=aarch64-linux-gnu- \
+            CROSS_COMPILE=aarch64-linux-gnu- \
+            LD=ld.lld Image.gz
+
+      - name: Upload Image
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-image-gz
+          path: kernel/out/arch/arm64/boot/Image.gz
