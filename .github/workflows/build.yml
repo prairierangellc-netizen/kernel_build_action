@@ -1,8 +1,7 @@
 name: Build Kernel
+
 on:
   workflow_dispatch:
-  push:
-    branches: [ main ]
 
 jobs:
   build:
@@ -11,64 +10,29 @@ jobs:
       - name: Checkout Kernel Source
         uses: actions/checkout@v4
         with:
-          repository: MotorolaMobilityLLC/kernel-msm
-          ref: android-14-release-u1tgn34.42-86
           path: kernel
 
-      - name: Setup Toolchains
+      - name: Surgical Fix for Moto Prototypes
+        run: |
+          sed -i 's/static int get_moto_device()/static int get_moto_device(void)/g' kernel/drivers/soc/qcom/icnss2/qmi.c
+          sed -i 's/static int get_moto_radio()/static int get_moto_radio(void)/g' kernel/drivers/soc/qcom/icnss2/qmi.c
+          echo "Motorola QMI prototypes patched successfully."
+
+      - name: Set up Toolchain
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc build-essential flex bison libssl-dev libelf-dev
-          git clone --depth=1 https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 prebuilts/clang
-          git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 prebuilts/gcc64
-          git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 prebuilts/gcc32
-
-      - name: Inject Stylus 2024 SUSFS (Static)
-        run: |
-          cd kernel
-          mkdir -p include/linux fs
-          # Ensure SUSFS header is present and globally visible
-          cat << 'EOF' > include/linux/susfs.h
-          #ifndef _LINUX_SUSFS_H
-          #define _LINUX_SUSFS_H
-          #include <linux/types.h>
-          extern bool susfs_enabled;
-          static inline bool is_susfs_enabled(void) { return susfs_enabled; }
-          #endif
-          EOF
-          cat << 'EOF' > fs/susfs.c
-          #include <linux/susfs.h>
-          bool susfs_enabled = true;
-          EOF
-          # Link into the filesystem build
-          grep -q "susfs.o" fs/Makefile || echo "obj-y += susfs.o" >> fs/Makefile
-          # Apply the ghost hooks
-          curl -LSs "https://raw.githubusercontent.com/galaxybuild-project/tools/main/Patches/0001_susfs_157_for_ksunext.patch" -o susfs.patch
-          patch -p1 --batch --fuzz=3 < susfs.patch || echo "Hooks applied with some skips."
+          sudo apt-get install -y bc build-essential bison flex libssl-dev libelf-dev
+          # Add any other specific toolchain setup you use here
 
       - name: Compile Kernel
         run: |
-          CLANG_PATH=$(find $(pwd)/prebuilts/clang -name "clang" -type f | head -n 1 | xargs dirname)
-          export PATH=$CLANG_PATH:$(pwd)/prebuilts/gcc64/bin:$(pwd)/prebuilts/gcc32/bin:$PATH
-          export LD=$CLANG_PATH/ld.lld
-          export ARCH=arm64
-          export LLVM=1
-          export LLVM_IAS=1
-          export CLANG_TRIPLE=aarch64-linux-gnu-
-          export CROSS_COMPILE=aarch64-linux-android-
-          export CROSS_COMPILE_ARM32=arm-linux-androideabi-
-          
           cd kernel
-          mkdir -p out
-          make O=out ARCH=arm64 CC=clang LD=$LD CLANG_TRIPLE=$CLANG_TRIPLE CROSS_COMPILE=$CROSS_COMPILE CROSS_COMPILE_ARM32=$CROSS_COMPILE_ARM32 gki_defconfig
-          make O=out ARCH=arm64 CC=clang LD=$LD CLANG_TRIPLE=$CLANG_TRIPLE CROSS_COMPILE=$CROSS_COMPILE CROSS_COMPILE_ARM32=$CROSS_COMPILE_ARM32 vendor/parrot_GKI.config
-          make O=out ARCH=arm64 CC=clang LD=$LD CLANG_TRIPLE=$CLANG_TRIPLE CROSS_COMPILE=$CROSS_COMPILE CROSS_COMPILE_ARM32=$CROSS_COMPILE_ARM32 vendor/parrot_consolidate.config
-          
-          # Force build to continue so we see the actual error if it occurs
-          make O=out ARCH=arm64 CC=clang LD=$LD CLANG_TRIPLE=$CLANG_TRIPLE CROSS_COMPILE=$CROSS_COMPILE CROSS_COMPILE_ARM32=$CROSS_COMPILE_ARM32 -j$(nproc) || (echo "BUILD FAILED. LOOKING FOR ERROR..." && grep -i "error:" out/Makefile || exit 1)
+          # Replace 'your_defconfig' with your actual config name
+          make O=out ARCH=arm64 your_defconfig
+          make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)
 
-      - name: Upload Kernel Artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Image-SUSFS-Stylus2024
-          path: kernel/out/arch/arm64/boot/Image
+          name: boot-image
+          path: kernel/out/arch/arm64/boot/Image.gz
