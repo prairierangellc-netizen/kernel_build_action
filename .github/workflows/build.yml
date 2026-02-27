@@ -10,7 +10,7 @@
           cat << 'EOF' > include/linux/susfs.h
           #ifndef _LINUX_SUSFS_H
           #define _LINUX_SUSFS_H
-          #include <linux/types.h>
+          #include <linux/types.h> 
           #define SUSFS_VERSION "1.5.2"
           void susfs_init(void);
           bool is_susfs_enabled(void);
