@@ -13,49 +13,29 @@ jobs:
           ref: t
           fetch-depth: 1
 
-      - name: Nuclear Search
-        run: |
-          echo "--- WHO AM I ---"
-          pwd
-          echo "--- WHAT IS HERE ---"
-          ls -R | head -n 20
-          echo "--- SEARCHING SYSTEM FOR MAKEFILE ---"
-          find . -name "Makefile"
-          echo "--- SEARCHING SYSTEM FOR CONFIGS ---"
-          find . -name "*defconfig"
-
       - name: Set up Toolchain
         run: |
           sudo apt-get update
           sudo apt-get install -y bc build-essential bison flex libssl-dev libelf-dev libncurses-dev crossbuild-essential-arm64
 
-      - name: Compile
+      - name: Apply Surgical Fixes
         run: |
-          # Find the folder containing 'arch' - the true kernel root
-          TARGET_DIR=$(find . -name "arch" -type d -exec dirname {} + | head -n 1)
-          
-          if [ -z "$TARGET_DIR" ]; then
-            echo "ERROR: Could not find kernel source structure (arch folder missing)."
-            exit 1
-          fi
-          
-          cd "$TARGET_DIR"
-          echo "Entering: $(pwd)"
-
-          # Apply the qmi.c fix surgically
+          # Fixing the 'non-prototype' error in qmi.c found in the previous run
           find . -name "qmi.c" -exec sed -i 's/static int get_moto_device()/static int get_moto_device(void)/g' {} +
           find . -name "qmi.c" -exec sed -i 's/static int get_moto_radio()/static int get_moto_radio(void)/g' {} +
 
-          # Pick the first defconfig that looks like boston
+      - name: Compile
+        run: |
+          KERNEL_ROOT=$(find . -name "Makefile" -exec dirname {} + | head -n 1)
+          cd "$KERNEL_ROOT"
+          
           REAL_CONFIG=$(find . -name "*boston*_defconfig" -printf "%f\n" | head -n 1)
           
           if [ -z "$REAL_CONFIG" ]; then
-             echo "Boston config not found. Available configs:"
-             find arch/arm64/configs/ -name "*defconfig" | head -n 5
+             echo "Boston config not found."
              exit 1
           fi
 
-          echo "Using Config: $REAL_CONFIG"
           make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- "$REAL_CONFIG"
           make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)
           
