@@ -16,21 +16,36 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y bc build-essential flex bison libssl-dev libelf-dev clang lld llvm gcc-aarch64-linux-gnu libncurses-dev
 
+      - name: Apply SUSFS Patch
+        run: |
+          git clone https://gitlab.com/simonpunk/SUSFS4LINUX.git susfs
+          cd kernel
+          cp ../susfs/include/linux/susfs.h include/linux/
+          cp ../susfs/fs/susfs.c fs/
+          patch -p1 < ../susfs/Patches/5.10/full.patch
+
       - name: Compile Kernel
         run: |
           cd kernel
           export ARCH=arm64
           export LLVM=1
           export CROSS_COMPILE=aarch64-linux-gnu-
-          
-          # Create output directory
           mkdir -p out
           
-          # 1. Initialize the base GKI config (Creates the .config file)
+          # 1. Create the absolute base GKI config
+          make O=out ARCH=arm64 gki_defconfig
+          
+          # 2. Merge the Motorola GKI specific config
           make O=out ARCH=arm64 vendor/parrot_GKI.config
           
-          # 2. Merge the Motorola-specific 'Parrot' fragment
+          # 3. Merge the Motorola Hardware fragment
           make O=out ARCH=arm64 vendor/parrot_consolidate.config
           
-          # 3. Final Compilation
+          # 4. Enable SUSFS masking features
+          scripts/config --file out/.config --enable CONFIG_SUSFS
+          scripts/config --file out/.config --enable CONFIG_SUSFS_SUS_MOUNT
+          scripts/config --file out/.config --enable CONFIG_SUSFS_SUS_PATH
+          scripts/config --file out/.config --enable CONFIG_SUSFS_HIDE_KSU
+          
+          # 5. Final Compilation
           make O=out ARCH=arm64 -j$(nproc)
