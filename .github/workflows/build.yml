@@ -1,4 +1,3 @@
-set-content build.yml @'
 name: Kernel Build
 
 on:
@@ -11,27 +10,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Environment
+      - name: Set up Build Environment
         run: |
           sudo apt-get update
           sudo apt-get install -y bc build-essential flex bison libssl-dev libelf-dev clang lld llvm
 
-      - name: Clone Kernel Source
+      - name: Clone Motorola Kernel
         run: |
           git clone https://github.com/MotorolaMobilityLLC/kernel-msm -b android-14-release-u2ubs34.44-86-7 kernel --depth 1
 
-      - name: Build Kernel
+      - name: Compile Kernel
         run: |
           cd kernel
           export ARCH=arm64
           export CROSS_COMPILE=aarch64-linux-gnu-
           export CC=clang
-          # Verify the file exists before starting to avoid the 200-error wall
+          # Verify pstar_defconfig exists
           if [ ! -f arch/arm64/configs/vendor/pstar_defconfig ]; then
-            echo "CONFIG FILE NOT FOUND! Searching..."
+            echo "Searching for config..."
             find arch/arm64/configs/ -name "*pstar*"
             exit 1
           fi
           make vendor/pstar_defconfig
           make -j$(nproc)
-'@
