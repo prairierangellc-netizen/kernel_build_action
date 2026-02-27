@@ -13,24 +13,23 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc bison build-essential flex git libssl-dev libelf-dev python3 pahole
+          sudo apt-get install -y bc bison build-essential flex git libssl-dev libelf-dev python3 pahole crossbuild-essential-arm64
 
       - name: Fetch Toolchain
         run: |
           mkdir -p clang
-          # Updated URL to ensure it pulls the actual binary archive
-          curl -L https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r487747c.tar.gz -o clang.tar.gz
+          curl -LSs https://github.com/Zyin87/Clang/raw/main/clang-r487747c.tar.gz -o clang.tar.gz
           tar -xzf clang.tar.gz -C clang
 
       - name: Fetch Brain
         run: |
           mkdir -p msm-kernel
-          curl -L https://github.com/MotorolaMobilityLLC/msm-kernel/archive/refs/heads/android-14-release-u2ub34.44-30-6r1.tar.gz | tar -xz -C msm-kernel --strip-components=1
+          curl -LSs https://github.com/MotorolaMobilityLLC/msm-kernel/archive/refs/heads/android-14-release-u2ub34.44-30-6r1.tar.gz | tar -xz -C msm-kernel --strip-components=1
 
       - name: Fetch Nerves
         run: |
           mkdir -p motorola-kernel-modules
-          curl -L https://github.com/MotorolaMobilityLLC/motorola-kernel-modules/archive/refs/heads/android-14-release-u2ub34.44-30-6r1.tar.gz | tar -xz -C motorola-kernel-modules --strip-components=1
+          curl -LSs https://github.com/MotorolaMobilityLLC/motorola-kernel-modules/archive/refs/heads/android-14-release-u2ub34.44-30-6r1.tar.gz | tar -xz -C motorola-kernel-modules --strip-components=1
 
       - name: Build
         run: |
