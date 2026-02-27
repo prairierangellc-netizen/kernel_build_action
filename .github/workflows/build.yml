@@ -11,7 +11,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # Restore the behavior of ignoring broken submodules
           submodules: false
           fetch-depth: 1
 
@@ -20,23 +19,18 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y bc build-essential python3 python-is-python3 \
           gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libelf-dev \
-          bison flex libssl-dev qtbase5-dev wget pahole libssl-dev
+          bison flex libssl-dev qtbase5-dev wget pahole libssl-dev curl
 
-      - name: Fetch Toolchain
+      - name: Fetch Official Toolchain
         run: |
           mkdir -p clang
-          wget -q --show-progress https://github.com/Zyin87/Clang/raw/main/clang-r487747c.tar.gz -O clang.tar.gz
-          # Check for valid gzip - the fix we needed
-          if ! file clang.tar.gz | grep -q "gzip compressed data"; then
-            echo "ERROR: Downloaded file is invalid. Check URL or LFS."
-            exit 1
-          fi
+          # Fetching directly from Google Android Source (Official r487747c)
+          curl -L "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android14-release/clang-r487747c.tar.gz" -o clang.tar.gz
           tar -xzf clang.tar.gz -C clang
           rm clang.tar.gz
 
       - name: Build Kernel
         run: |
-          # Restoring the environment variables and paths from yesterday's success
           export PATH=$(pwd)/clang/bin:$PATH
           export ARCH=arm64
           export SUBARCH=arm64
@@ -46,10 +40,9 @@ jobs:
           export KBUILD_BUILD_USER=Nick
           export KBUILD_BUILD_HOST=KernelOS
           
-          # Force sync submodules manually to bypass the broken GCC 4.9 path
+          # Skip broken submodule links
           git submodule update --init --recursive --depth 1 || true
           
-          # Build process
           make O=out CC=clang ARCH=arm64 vendor/wayne_defconfig
           make -j$(nproc --all) O=out \
             CC=clang \
