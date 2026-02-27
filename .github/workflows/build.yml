@@ -1,4 +1,4 @@
-name: Build KernelOS Ghost Layer
+name: Build Kernel
 on:
   workflow_dispatch:
 
@@ -6,35 +6,38 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Project
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Fetch Brain (msm-kernel)
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc bison build-essential flex git libssl-dev libelf-dev python3 pahole
+
+      - name: Fetch Toolchain
+        run: |
+          mkdir -p clang
+          curl -L https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r487747c.tar.gz | tar -xz -C clang
+
+      - name: Fetch Brain
         run: |
           mkdir -p msm-kernel
           curl -L https://github.com/MotorolaMobilityLLC/msm-kernel/archive/refs/heads/android-14-release-u2ub34.44-30-6r1.tar.gz | tar -xz -C msm-kernel --strip-components=1
 
-      - name: Fetch Nerves (motorola-kernel-modules)
+      - name: Fetch Nerves
         run: |
           mkdir -p motorola-kernel-modules
           curl -L https://github.com/MotorolaMobilityLLC/motorola-kernel-modules/archive/refs/heads/android-14-release-u2ub34.44-30-6r1.tar.gz | tar -xz -C motorola-kernel-modules --strip-components=1
 
-      - name: Verify Nerve Integrity
+      - name: Build
         run: |
-          if [ -f "motorola-kernel-modules/driver_common.h" ]; then
-            echo "SUCCESS: driver_common.h is present."
-          else
-            echo "ERROR: driver_common.h missing from source."
-            exit 1
-          fi
-          if [ -d "motorola-kernel-modules/drivers/input/misc/mmi_stylus" ]; then
-            echo "SUCCESS: Stylus drivers located."
-          else
-            echo "ERROR: Stylus drivers missing."
-            exit 1
-          fi
+          export PATH=$GITHUB_WORKSPACE/clang/bin:$PATH
+          cd msm-kernel
+          make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LLVM=1 LLVM_IAS=1 gki_defconfig
+          make -j$(nproc) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LLVM=1 LLVM_IAS=1
 
-      - name: Build Ghost Kernel
-        run: |
-          echo "Starting Phase 3 Build..."
-          # Build commands will go here once the Ghost Layer patches are applied
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: Image
+          path: msm-kernel/arch/arm64/boot/Image
