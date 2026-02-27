@@ -1,5 +1,4 @@
-name: Build Kernel
-
+name: Build KernelOS Ghost Layer
 on:
   workflow_dispatch:
 
@@ -7,57 +6,35 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Build Repo
+      - name: Checkout Project
         uses: actions/checkout@v4
 
-      - name: Set up Toolchain
+      - name: Fetch Brain (msm-kernel)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y bc build-essential bison flex libssl-dev libelf-dev libncurses-dev crossbuild-essential-arm64 git
+          mkdir -p msm-kernel
+          curl -L https://github.com/MotorolaMobilityLLC/msm-kernel/archive/refs/heads/android-14-release-u2ub34.44-30-6r1.tar.gz | tar -xz -C msm-kernel --strip-components=1
 
-      - name: Clone Motorola Kernel Source
+      - name: Fetch Nerves (motorola-kernel-modules)
         run: |
-          echo "Finding the correct branch..."
-          # Fetch remote branches and look for 'T' or '13' related ones
-          BRANCH=$(git ls-remote --heads https://github.com/MotorolaMobilityLLC/kernel-msm.git | grep -iE 'MMI-.*(T|13)' | awk -F'/' '{print $3}' | head -n 1)
-          
-          if [ -z "$BRANCH" ]; then
-            echo "Fallback: Using 'master' as no 'T' branch was found."
-            BRANCH="master"
+          mkdir -p motorola-kernel-modules
+          curl -L https://github.com/MotorolaMobilityLLC/motorola-kernel-modules/archive/refs/heads/android-14-release-u2ub34.44-30-6r1.tar.gz | tar -xz -C motorola-kernel-modules --strip-components=1
+
+      - name: Verify Nerve Integrity
+        run: |
+          if [ -f "motorola-kernel-modules/driver_common.h" ]; then
+            echo "SUCCESS: driver_common.h is present."
+          else
+            echo "ERROR: driver_common.h missing from source."
+            exit 1
           fi
-          
-          echo "Selected Branch: $BRANCH"
-          git clone --depth 1 --branch "$BRANCH" https://github.com/MotorolaMobilityLLC/kernel-msm.git source
-
-      - name: Apply Surgical Fixes
-        run: |
-          cd source
-          echo "Applying qmi.c fixes..."
-          find . -name "qmi.c" -exec sed -i 's/static int get_moto_device()/static int get_moto_device(void)/g' {} +
-          find . -name "qmi.c" -exec sed -i 's/static int get_moto_radio()/static int get_moto_radio(void)/g' {} +
-
-      - name: Compile
-        run: |
-          cd source
-          REAL_CONFIG=$(find arch/arm64/configs/ -name "*boston*_defconfig" -printf "%f\n" | head -n 1)
-          
-          if [ -z "$REAL_CONFIG" ]; then
-             echo "ERROR: Boston config not found."
-             ls arch/arm64/configs/ | head -n 10
-             exit 1
+          if [ -d "motorola-kernel-modules/drivers/input/misc/mmi_stylus" ]; then
+            echo "SUCCESS: Stylus drivers located."
+          else
+            echo "ERROR: Stylus drivers missing."
+            exit 1
           fi
 
-          echo "Building with Config: $REAL_CONFIG"
-          make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- "$REAL_CONFIG"
-          make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)
-          
-          echo "FINAL_OUT=$(pwd)/out" >> $GITHUB_ENV
-
-      - name: Upload Artifact
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Kernel_Build_Output
-          path: |
-            source/out/arch/arm64/boot/Image.gz
-            source/out/arch/arm64/boot/dtbo.img
+      - name: Build Ghost Kernel
+        run: |
+          echo "Starting Phase 3 Build..."
+          # Build commands will go here once the Ghost Layer patches are applied
