@@ -16,13 +16,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y bc build-essential flex bison libssl-dev libelf-dev clang lld llvm gcc-aarch64-linux-gnu libncurses-dev
 
-      - name: Apply SUSFS Patch
+      - name: Inject SUSFS (Ghost Layer)
         run: |
-          git clone https://gitlab.com/simonpunk/SUSFS4LINUX.git susfs
           cd kernel
-          cp ../susfs/include/linux/susfs.h include/linux/
-          cp ../susfs/fs/susfs.c fs/
-          patch -p1 < ../susfs/Patches/5.10/full.patch
+          # Downloading SUSFS components directly to avoid GitLab Auth
+          curl -LSs https://raw.githubusercontent.com/sidex15/ksu_susfs/main/Kernel_Patches/5.10/full.patch -o susfs.patch
+          curl -LSs https://raw.githubusercontent.com/sidex15/ksu_susfs/main/include/linux/susfs.h -o include/linux/susfs.h
+          curl -LSs https://raw.githubusercontent.com/sidex15/ksu_susfs/main/fs/susfs.c -o fs/susfs.c
+          
+          # Apply the weave
+          patch -p1 < susfs.patch
 
       - name: Compile Kernel
         run: |
@@ -32,20 +35,18 @@ jobs:
           export CROSS_COMPILE=aarch64-linux-gnu-
           mkdir -p out
           
-          # 1. Create the absolute base GKI config
+          # 1. Initialize the GKI base
           make O=out ARCH=arm64 gki_defconfig
           
-          # 2. Merge the Motorola GKI specific config
+          # 2. Merge Motorola Layers
           make O=out ARCH=arm64 vendor/parrot_GKI.config
-          
-          # 3. Merge the Motorola Hardware fragment
           make O=out ARCH=arm64 vendor/parrot_consolidate.config
           
-          # 4. Enable SUSFS masking features
+          # 3. Enable SUSFS
           scripts/config --file out/.config --enable CONFIG_SUSFS
           scripts/config --file out/.config --enable CONFIG_SUSFS_SUS_MOUNT
           scripts/config --file out/.config --enable CONFIG_SUSFS_SUS_PATH
           scripts/config --file out/.config --enable CONFIG_SUSFS_HIDE_KSU
           
-          # 5. Final Compilation
+          # 4. Final Build
           make O=out ARCH=arm64 -j$(nproc)
