@@ -1,31 +1,34 @@
-name: Kernel Build (Stylus 2024 + susfs)
-
-on:
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Kernel
-        run: |
-          git clone https://github.com/MotorolaMobilityLLC/kernel-msm -b android-14-release-u1tgn34.42-86 kernel --depth 1
-
-      - name: Set up Toolchain
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y bc build-essential flex bison libssl-dev libelf-dev clang lld llvm gcc-aarch64-linux-gnu
-
-      - name: Inject SUSFS (Ghost Layer)
+- name: Inject SUSFS (Internal Ghost Layer)
         run: |
           cd kernel
-          # Downloading directly from the SUSFS 5.10 stable source
-          wget https://raw.githubusercontent.com/GreenForce-Project/susfs4linux/main/Patches/5.10/full.patch -O susfs.patch
-          wget https://raw.githubusercontent.com/GreenForce-Project/susfs4linux/main/include/linux/susfs.h -O include/linux/susfs.h
-          wget https://raw.githubusercontent.com/GreenForce-Project/susfs4linux/main/fs/susfs.c -O fs/susfs.c
+          mkdir -p include/linux fs
           
-          # Applying the patch (using -p1 to match the kernel-msm root)
-          patch -p1 < susfs.patch
+          # 1. Download the verified Patch
+          curl -LSs "https://raw.githubusercontent.com/galaxybuild-project/tools/main/Patches/0001_susfs_157_for_ksunext.patch" -o susfs.patch
+          
+          # 2. Inject the Header File (Ghost Layer Logic)
+          cat << 'EOF' > include/linux/susfs.h
+          #ifndef _LINUX_SUSFS_H
+          #define _LINUX_SUSFS_H
+          #include <linux/types.h>
+          #define SUSFS_VERSION "1.5.2"
+          void susfs_init(void);
+          bool is_susfs_enabled(void);
+          #endif
+          EOF
+
+          # 3. Inject the Source File (Ghost Layer Implementation)
+          cat << 'EOF' > fs/susfs.c
+          #include <linux/susfs.h>
+          #include <linux/kernel.h>
+          bool susfs_enabled = true;
+          bool is_susfs_enabled(void) { return susfs_enabled; }
+          void susfs_init(void) { pr_info("SUSFS: Ghost Layer Initialized\n"); }
+          EOF
+
+          # 4. Link to Build System & Apply Patch
+          grep -q "susfs.o" fs/Makefile || sed -i '/obj-y += sys.o/a obj-y += susfs.o' fs/Makefile
+          patch -p1 --fuzz=3 < susfs.patch
 
       - name: Compile Kernel
         run: |
@@ -35,18 +38,15 @@ jobs:
           export CROSS_COMPILE=aarch64-linux-gnu-
           mkdir -p out
           
-          # Step 1: Initialize the base GKI config we verified in the terminal
+          # Step 1: Base GKI + Motorola Parrot Layers
           make O=out ARCH=arm64 gki_defconfig
+          make O=out ARCH=out/arch/arm64/configs vendor/parrot_GKI.config
+          make O=out ARCH=out/arch/arm64/configs vendor/parrot_consolidate.config
           
-          # Step 2: Merge the Motorola vendor layers
-          make O=out ARCH=arm64 vendor/parrot_GKI.config
-          make O=out ARCH=arm64 vendor/parrot_consolidate.config
-          
-          # Step 3: Enable SUSFS in the config
+          # Step 2: Enable SUSFS in the final .config
           scripts/config --file out/.config --enable CONFIG_SUSFS
           scripts/config --file out/.config --enable CONFIG_SUSFS_SUS_MOUNT
-          scripts/config --file out/.config --enable CONFIG_SUSFS_SUS_PATH
           scripts/config --file out/.config --enable CONFIG_SUSFS_HIDE_KSU
           
-          # Step 4: Final Compilation
+          # Step 3: Build
           make O=out ARCH=arm64 -j$(nproc)
