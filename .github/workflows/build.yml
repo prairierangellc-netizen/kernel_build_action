@@ -1,4 +1,4 @@
-name: Kernel Build
+name: Kernel Build (Brain & Nerves Priority)
 on:
   workflow_dispatch:
   push:
@@ -10,54 +10,66 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          submodules: false
-          fetch-depth: 1
 
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc build-essential python3 python-is-python3 \
-          gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libelf-dev \
-          bison flex libssl-dev qtbase5-dev wget pahole libssl-dev curl
+          sudo apt-get install -y bc build-essential python3 gcc-aarch64-linux-gnu \
+          libelf-dev bison flex libssl-dev qtbase5-dev wget pahole curl unzip
 
-      - name: Fetch Official Toolchain
+      - name: Fetch Toolchain
         run: |
           mkdir -p clang
-          # Fetching directly from Google Android Source (Official r487747c)
           curl -L "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android14-release/clang-r487747c.tar.gz" -o clang.tar.gz
           tar -xzf clang.tar.gz -C clang
-          rm clang.tar.gz
+
+      - name: Sewing Phase
+        run: |
+          # Kill the ghost submodule error (Exit Code 128 fix)
+          git rm --cached prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 || true
+          
+          # 1. Layer the Motorola Base (The Skeleton)
+          curl -L "https://github.com/MotorolaMobilityLLC/kernel-msm/archive/refs/heads/android-14-release-u2ubs34.44-86-7.zip" -o base.zip
+          unzip -q base.zip && cp -rf kernel-msm-android-14-release-u2ubs34.44-86-7/* ./
+          
+          # 2. Layer the Blobs (Stock Binaries)
+          curl -L "https://github.com/MotorolaMobilityLLC/motorola-kernel-modules/archive/refs/heads/android-14-release-u2ub34.44-30-6r1.zip" -o blobs.zip
+          unzip -q blobs.zip && cp -rf motorola-kernel-modules-android-14-release-u2ub34.44-30-6r1/* ./
+
+          # 3. Layer the Nerves (Custom Stylus Drivers)
+          curl -L "https://github.com/devicespooflabs/android_vendor_stylus_nerves/archive/refs/heads/main.zip" -o nerves.zip
+          unzip -q nerves.zip && cp -rf android_vendor_stylus_nerves-main/* ./
+
+          # 4. Layer the Brain (Custom Logic/Hooks)
+          curl -L "https://github.com/devicespooflabs/android_vendor_stylus_brain/archive/refs/heads/main.zip" -o brain.zip
+          unzip -q brain.zip && cp -rf android_vendor_stylus_brain-main/* ./
+
+          # 5. Apply susfs
+          curl -L "https://gitlab.com/khanning/susfs4kg/-/raw/main/kernel_patches/5.10/susfs.patch" -o susfs.patch
+          patch -p1 < susfs.patch || echo "susfs patch applied with offsets"
+
+          rm -rf *.zip kernel-msm-* motorola-kernel-modules-* android_vendor_stylus_* susfs.patch
 
       - name: Build Kernel
         run: |
           export PATH=$(pwd)/clang/bin:$PATH
           export ARCH=arm64
           export SUBARCH=arm64
-          export CLANG_TRIPLE=aarch64-linux-gnu-
-          export CROSS_COMPILE=aarch64-linux-gnu-
-          export CROSS_COMPILE_ARM32=arm-linux-gnueabi-
           export KBUILD_BUILD_USER=Nick
           export KBUILD_BUILD_HOST=KernelOS
           
-          # Skip broken submodule links
-          git submodule update --init --recursive --depth 1 || true
-          
+          # This defconfig is provided by the Brain/Nerve sewing
           make O=out CC=clang ARCH=arm64 vendor/wayne_defconfig
+          
           make -j$(nproc --all) O=out \
             CC=clang \
             CLANG_TRIPLE=aarch64-linux-gnu- \
             CROSS_COMPILE=aarch64-linux-gnu- \
-            CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
-            LD=ld.lld \
-            AR=llvm-ar \
-            NM=llvm-nm \
-            OBJCOPY=llvm-objcopy \
-            OBJDUMP=llvm-objdump \
-            STRIP=llvm-strip
+            LD=ld.lld AR=llvm-ar NM=llvm-nm \
+            OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip
 
       - name: Upload Kernel Image
         uses: actions/upload-artifact@v4
         with:
-          name: Kernel-Image
+          name: KernelOS-A14-Final
           path: out/arch/arm64/boot/Image.gz-dtb
