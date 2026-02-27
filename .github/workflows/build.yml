@@ -1,6 +1,7 @@
 name: Build
 on:
-  workflow_dispatch:
+  push:             # This forces it to run immediately on push
+  workflow_dispatch: # This allows manual runs later
 
 jobs:
   build:
