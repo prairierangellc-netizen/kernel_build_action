@@ -1,4 +1,3 @@
-cat << 'EOF' > .github/workflows/build.yml
 name: Kernel Build
 on:
   workflow_dispatch:
@@ -25,11 +24,15 @@ jobs:
       - name: Fetch Toolchain
         run: |
           mkdir -p clang
+          # Using wget to better handle redirects for large binaries
           wget -q --show-progress https://github.com/Zyin87/Clang/raw/main/clang-r487747c.tar.gz -O clang.tar.gz
+          
+          # Check if the file is a valid gzip to prevent the "not in gzip format" crash
           if ! file clang.tar.gz | grep -q "gzip compressed data"; then
-            echo "ERROR: Downloaded file is not a valid gzip. Check the URL or LFS settings."
+            echo "ERROR: Downloaded file is invalid. GitHub likely served an error page or LFS pointer."
             exit 1
           fi
+          
           tar -xzf clang.tar.gz -C clang
           rm clang.tar.gz
 
@@ -42,11 +45,16 @@ jobs:
           export CROSS_COMPILE_ARM32=arm-linux-gnueabi-
           export CLANG_TRIPLE=aarch64-linux-gnu-
           
-          # Use Clang for the build
+          # Configure and Build
           make O=out CC=clang ARCH=arm64 vendor/wayne_defconfig
           make -j$(nproc --all) O=out \
             CC=clang \
             CLANG_TRIPLE=aarch64-linux-gnu- \
             CROSS_COMPILE=aarch64-linux-gnu- \
             CROSS_COMPILE_ARM32=arm-linux-gnueabi-
-EOF
+
+      - name: Upload Kernel Image
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kernel-Image
+          path: out/arch/arm64/boot/Image.gz-dtb
