@@ -1,7 +1,7 @@
 name: Build
 on:
-  push:             # This forces it to run immediately on push
-  workflow_dispatch: # This allows manual runs later
+  push:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -18,7 +18,9 @@ jobs:
       - name: Fetch Toolchain
         run: |
           mkdir -p clang
-          curl -L https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r487747c.tar.gz | tar -xz -C clang
+          # Updated URL to ensure it pulls the actual binary archive
+          curl -L https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r487747c.tar.gz -o clang.tar.gz
+          tar -xzf clang.tar.gz -C clang
 
       - name: Fetch Brain
         run: |
