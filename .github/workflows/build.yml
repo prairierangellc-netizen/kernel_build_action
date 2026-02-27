@@ -1,4 +1,4 @@
-name: Kernel Build
+name: Kernel Build (Stylus 2024 + susfs)
 
 on:
   workflow_dispatch:
@@ -14,7 +14,7 @@ jobs:
       - name: Set up Toolchain
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc build-essential flex bison libssl-dev libelf-dev clang lld llvm aarch64-linux-gnu-gcc
+          sudo apt-get install -y bc build-essential flex bison libssl-dev libelf-dev clang lld llvm gcc-aarch64-linux-gnu libncurses-dev
 
       - name: Compile Kernel
         run: |
@@ -23,11 +23,10 @@ jobs:
           export LLVM=1
           export CROSS_COMPILE=aarch64-linux-gnu-
           
-          # 1. Create the output directory
           mkdir -p out
           
-          # 2. Combine the GKI base with the Parrot vendor configs
-          make O=out vendor/parrot_GKI.config vendor/parrot_consolidate.config
+          # Merging the GKI base with Parrot (Stylus 2024) specific drivers
+          make O=out ARCH=arm64 vendor/parrot_GKI.config vendor/parrot_consolidate.config
           
-          # 3. Build the kernel
-          make O=out -j$(nproc)
+          # Full build
+          make O=out ARCH=arm64 -j$(nproc)
