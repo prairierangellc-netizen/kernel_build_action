@@ -13,20 +13,16 @@ jobs:
           ref: t
           fetch-depth: 1
 
-      - name: Reveal File Structure
+      - name: Nuclear Search
         run: |
-          echo "--- Current Directory ---"
-          ls -F
-          echo "--- Searching for Makefiles ---"
-          find . -name "Makefile" -maxdepth 4
-          echo "--- Searching for any defconfigs ---"
-          find . -name "*defconfig" | head -n 20
-
-      - name: Surgical Fix for Moto Prototypes
-        run: |
-          echo "Applying qmi.c fix..."
-          find . -name "qmi.c" -exec sed -i 's/static int get_moto_device()/static int get_moto_device(void)/g' {} +
-          find . -name "qmi.c" -exec sed -i 's/static int get_moto_radio()/static int get_moto_radio(void)/g' {} +
+          echo "--- WHO AM I ---"
+          pwd
+          echo "--- WHAT IS HERE ---"
+          ls -R | head -n 20
+          echo "--- SEARCHING SYSTEM FOR MAKEFILE ---"
+          find . -name "Makefile"
+          echo "--- SEARCHING SYSTEM FOR CONFIGS ---"
+          find . -name "*defconfig"
 
       - name: Set up Toolchain
         run: |
@@ -35,18 +31,28 @@ jobs:
 
       - name: Compile
         run: |
-          # Find the folder containing 'arch'
-          KERNEL_ROOT=$(find . -name "arch" -type d -exec dirname {} + | head -n 1)
-          echo "Kernel Root detected: $KERNEL_ROOT"
-          cd "$KERNEL_ROOT"
+          # Find the folder containing 'arch' - the true kernel root
+          TARGET_DIR=$(find . -name "arch" -type d -exec dirname {} + | head -n 1)
           
-          # Find the actual name of the boston config
-          REAL_CONFIG=$(find . -name "*boston*_defconfig" -print -quit | xargs basename)
+          if [ -z "$TARGET_DIR" ]; then
+            echo "ERROR: Could not find kernel source structure (arch folder missing)."
+            exit 1
+          fi
+          
+          cd "$TARGET_DIR"
+          echo "Entering: $(pwd)"
+
+          # Apply the qmi.c fix surgically
+          find . -name "qmi.c" -exec sed -i 's/static int get_moto_device()/static int get_moto_device(void)/g' {} +
+          find . -name "qmi.c" -exec sed -i 's/static int get_moto_radio()/static int get_moto_radio(void)/g' {} +
+
+          # Pick the first defconfig that looks like boston
+          REAL_CONFIG=$(find . -name "*boston*_defconfig" -printf "%f\n" | head -n 1)
           
           if [ -z "$REAL_CONFIG" ]; then
-            echo "Boston config not found, listing available configs in arch/arm64/configs/:"
-            ls arch/arm64/configs/ | head -n 10
-            exit 1
+             echo "Boston config not found. Available configs:"
+             find arch/arm64/configs/ -name "*defconfig" | head -n 5
+             exit 1
           fi
 
           echo "Using Config: $REAL_CONFIG"
@@ -56,6 +62,7 @@ jobs:
           echo "FINAL_OUT=$(pwd)/out" >> $GITHUB_ENV
 
       - name: Upload Artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: Kernel_Build_Output
