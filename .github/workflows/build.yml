@@ -66,6 +66,10 @@ jobs:
           export GCC32_DIR=$(pwd)/../prebuilts/gcc32
           export PATH=$CLANG_DIR/bin:$GCC64_DIR/bin:$GCC32_DIR/bin:$PATH
           
+          # FIX: Explicitly point to the linker Motorola is looking for
+          export LD=$CLANG_DIR/bin/ld.lld
+          export LDFLAGS="--rtlib=compiler-rt --unwindlib=libgcc"
+
           # Cross-Compile Variables for Stylus 2024
           export ARCH=arm64
           export LLVM=1
@@ -77,11 +81,6 @@ jobs:
           mkdir -p out
           
           # Build Motorola Parrot Config
-          make O=out ARCH=arm64 CC=clang CLANG_TRIPLE=$CLANG_TRIPLE CROSS_COMPILE=$CROSS_COMPILE CROSS_COMPILE_ARM32=$CROSS_COMPILE_ARM32 gki_defconfig
-          make O=out ARCH=arm64 CC=clang CLANG_TRIPLE=$CLANG_TRIPLE CROSS_COMPILE=$CROSS_COMPILE CROSS_COMPILE_ARM32=$CROSS_COMPILE_ARM32 vendor/parrot_GKI.config
-          make O=out ARCH=arm64 CC=clang CLANG_TRIPLE=$CLANG_TRIPLE CROSS_COMPILE=$CROSS_COMPILE CROSS_COMPILE_ARM32=$CROSS_COMPILE_ARM32 vendor/parrot_consolidate.config
-          
-          # Final SUSFS Ghost Layer Activation
-          ./scripts/config --file out/.config --enable CONFIG_SUSFS
-          ./scripts/config --file out/.config --enable CONFIG_SUSFS_SUS_MOUNT
-          ./scripts/config --file out/.config --
+          make O=out ARCH=arm64 CC=clang LD=$LD CLANG_TRIPLE=$CLANG_TRIPLE CROSS_COMPILE=$CROSS_COMPILE CROSS_COMPILE_ARM32=$CROSS_COMPILE_ARM32 gki_defconfig
+          make O=out ARCH=arm64 CC=clang LD=$LD CLANG_TRIPLE=$CLANG_TRIPLE CROSS_COMPILE=$CROSS_COMPILE CROSS_COMPILE_ARM32=$CROSS_COMPILE_ARM32 vendor/parrot_GKI.config
+          make O=out ARCH=arm64 CC=clang LD
