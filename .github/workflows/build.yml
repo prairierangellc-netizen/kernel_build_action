@@ -4,13 +4,30 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Directory Mapping
+      - name: Checkout Kernel
         run: |
-          git clone https://github.com/MotorolaMobilityLLC/kernel-msm -b android-14-release-u2ubs34.44-86-7 kernel --depth 1
-          echo "--- SEARCH RESULTS ---"
-          find kernel -name "*pstar_defconfig*"
-          echo "--- ARCH FOLDER CHECK ---"
-          ls -R kernel/arch/arm64/configs | grep pstar || echo "No pstar matches found in configs"
+          git clone https://github.com/MotorolaMobilityLLC/kernel-msm -b android-14-release-u1tgn34.42-86 kernel --depth 1
+
+      - name: Set up Toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc build-essential flex bison libssl-dev libelf-dev clang lld llvm aarch64-linux-gnu-gcc
+
+      - name: Compile Kernel
+        run: |
+          cd kernel
+          export ARCH=arm64
+          export LLVM=1
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          
+          # 1. Create the output directory
+          mkdir -p out
+          
+          # 2. Combine the GKI base with the Parrot vendor configs
+          make O=out vendor/parrot_GKI.config vendor/parrot_consolidate.config
+          
+          # 3. Build the kernel
+          make O=out -j$(nproc)
