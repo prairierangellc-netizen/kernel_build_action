@@ -4,32 +4,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Build Environment
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y bc build-essential flex bison libssl-dev libelf-dev clang lld llvm
-
-      - name: Clone Motorola Kernel
+      - name: Directory Mapping
         run: |
           git clone https://github.com/MotorolaMobilityLLC/kernel-msm -b android-14-release-u2ubs34.44-86-7 kernel --depth 1
-
-      - name: Compile Kernel
-        run: |
-          cd kernel
-          export ARCH=arm64
-          export CROSS_COMPILE=aarch64-linux-gnu-
-          export CC=clang
-          # Verify pstar_defconfig exists
-          if [ ! -f arch/arm64/configs/vendor/pstar_defconfig ]; then
-            echo "Searching for config..."
-            find arch/arm64/configs/ -name "*pstar*"
-            exit 1
-          fi
-          make vendor/pstar_defconfig
-          make -j$(nproc)
+          echo "--- SEARCH RESULTS ---"
+          find kernel -name "*pstar_defconfig*"
+          echo "--- ARCH FOLDER CHECK ---"
+          ls -R kernel/arch/arm64/configs | grep pstar || echo "No pstar matches found in configs"
