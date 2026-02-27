@@ -11,28 +11,34 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: kernel
+          submodules: recursive  # Added this to fix the 'submodule' warning in your log
 
       - name: Surgical Fix for Moto Prototypes
+        working-directory: kernel
         run: |
-          sed -i 's/static int get_moto_device()/static int get_moto_device(void)/g' kernel/drivers/soc/qcom/icnss2/qmi.c
-          sed -i 's/static int get_moto_radio()/static int get_moto_radio(void)/g' kernel/drivers/soc/qcom/icnss2/qmi.c
+          # Fixing the strict prototype errors in the Motorola/Qualcomm source
+          sed -i 's/static int get_moto_device()/static int get_moto_device(void)/g' drivers/soc/qcom/icnss2/qmi.c
+          sed -i 's/static int get_moto_radio()/static int get_moto_radio(void)/g' drivers/soc/qcom/icnss2/qmi.c
           echo "Motorola QMI prototypes patched successfully."
 
       - name: Set up Toolchain
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc build-essential bison flex libssl-dev libelf-dev
-          # Add any other specific toolchain setup you use here
+          sudo apt-get install -y bc build-essential bison flex libssl-dev libelf-dev libncurses-dev
+          # Note: If your build needs a specific Clang/GCC, we will add it here next.
 
       - name: Compile Kernel
+        working-directory: kernel
         run: |
-          cd kernel
-          # Replace 'your_defconfig' with your actual config name
-          make O=out ARCH=arm64 your_defconfig
+          # Use the correct defconfig for the Moto Stylus 2024 (boston)
+          # Replace 'boston_defconfig' if your specific branch uses a different name
+          make O=out ARCH=arm64 boston_defconfig
           make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: boot-image
-          path: kernel/out/arch/arm64/boot/Image.gz
+          name: Kernel_Build_Output
+          path: |
+            kernel/out/arch/arm64/boot/Image.gz
+            kernel/out/arch/arm64/boot/dtbo.img
