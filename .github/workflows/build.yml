@@ -2,8 +2,7 @@ name: Build Kernel
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   build:
@@ -16,20 +15,21 @@ jobs:
           ref: android-14-release-u1tgn34.42-86
           path: kernel
 
-      - name: Setup Build Environment
+      - name: Setup Toolchains
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc build-essential flex bison libssl-dev libelf-dev clang lld llvm
+          sudo apt-get install -y bc build-essential flex bison libssl-dev libelf-dev
+          # Pulling official Google Prebuilts for Android 14 / Kernel 5.10
+          git clone --depth=1 https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 prebuilts/clang
+          git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 prebuilts/gcc64
+          git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 prebuilts/gcc32
 
       - name: Inject Stylus 2024 SUSFS (Static)
         run: |
           cd kernel
           mkdir -p include/linux fs
           
-          # 1. Download the verified Patch
-          curl -LSs "https://raw.githubusercontent.com/galaxybuild-project/tools/main/Patches/0001_susfs_157_for_ksunext.patch" -o susfs.patch
-          
-          # 2. Inject Header File (Static)
+          # 1. Create Static Header (Ghost Layer v1.5.2)
           cat << 'EOF' > include/linux/susfs.h
           #ifndef _LINUX_SUSFS_H
           #define _LINUX_SUSFS_H
@@ -40,8 +40,8 @@ jobs:
           bool is_susfs_enabled(void);
           #endif
           EOF
-
-          # 3. Inject Source File (Static)
+          
+          # 2. Create Static Source
           cat << 'EOF' > fs/susfs.c
           #include <linux/susfs.h>
           #include <linux/kernel.h>
@@ -49,33 +49,39 @@ jobs:
           bool is_susfs_enabled(void) { return susfs_enabled; }
           void susfs_init(void) { pr_info("SUSFS: Stylus 2024 Ghost Layer Active\n"); }
           EOF
-
-          # 4. Link & Patch
+          
+          # 3. Patch Motorola Makefile to compile the Ghost Layer
           grep -q "susfs.o" fs/Makefile || sed -i '/obj-y += sys.o/a obj-y += susfs.o' fs/Makefile
-          patch -p1 --batch --fuzz=3 < susfs.patch || echo "Skipping non-Motorola hunks."
+          
+          # 4. Apply GalaxyBuild Universal Patch (Batch mode to skip non-existent files)
+          curl -LSs "https://raw.githubusercontent.com/galaxybuild-project/tools/main/Patches/0001_susfs_157_for_ksunext.patch" -o susfs.patch
+          patch -p1 --batch --fuzz=3 < susfs.patch || echo "Applied essential hooks to Motorola source."
 
       - name: Compile Kernel
         run: |
           cd kernel
+          # Setup Absolute Paths for Tools
+          export CLANG_DIR=$(pwd)/../prebuilts/clang/clang-r416183b1
+          export GCC64_DIR=$(pwd)/../prebuilts/gcc64
+          export GCC32_DIR=$(pwd)/../prebuilts/gcc32
+          export PATH=$CLANG_DIR/bin:$GCC64_DIR/bin:$GCC32_DIR/bin:$PATH
+          
+          # Cross-Compile Variables for Stylus 2024
           export ARCH=arm64
           export LLVM=1
-          export CROSS_COMPILE=aarch64-linux-gnu-
+          export LLVM_IAS=1
+          export CLANG_TRIPLE=aarch64-linux-gnu-
+          export CROSS_COMPILE=aarch64-linux-android-
+          export CROSS_COMPILE_ARM32=arm-linux-androideabi-
+          
           mkdir -p out
           
-          # Base GKI + Motorola Parrot Layers
-          make O=out ARCH=arm64 gki_defconfig
-          make O=out ARCH=out/arch/arm64/configs vendor/parrot_GKI.config
-          make O=out ARCH=out/arch/arm64/configs vendor/parrot_consolidate.config
+          # Build Motorola Parrot Config
+          make O=out ARCH=arm64 CC=clang CLANG_TRIPLE=$CLANG_TRIPLE CROSS_COMPILE=$CROSS_COMPILE CROSS_COMPILE_ARM32=$CROSS_COMPILE_ARM32 gki_defconfig
+          make O=out ARCH=arm64 CC=clang CLANG_TRIPLE=$CLANG_TRIPLE CROSS_COMPILE=$CROSS_COMPILE CROSS_COMPILE_ARM32=$CROSS_COMPILE_ARM32 vendor/parrot_GKI.config
+          make O=out ARCH=arm64 CC=clang CLANG_TRIPLE=$CLANG_TRIPLE CROSS_COMPILE=$CROSS_COMPILE CROSS_COMPILE_ARM32=$CROSS_COMPILE_ARM32 vendor/parrot_consolidate.config
           
-          # Final Config Adjustments
-          scripts/config --file out/.config --enable CONFIG_SUSFS
-          scripts/config --file out/.config --enable CONFIG_SUSFS_SUS_MOUNT
-          scripts/config --file out/.config --enable CONFIG_SUSFS_HIDE_KSU
-          
-          make O=out ARCH=arm64 -j$(nproc)
-
-      - name: Upload Kernel Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Image-SUSFS
-          path: kernel/out/arch/arm64/boot/Image
+          # Final SUSFS Ghost Layer Activation
+          ./scripts/config --file out/.config --enable CONFIG_SUSFS
+          ./scripts/config --file out/.config --enable CONFIG_SUSFS_SUS_MOUNT
+          ./scripts/config --file out/.config --
