@@ -7,35 +7,49 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # 1. THE BIRTH: The Motorola source is pulled here first.
       - name: Checkout Kernel Source
         uses: actions/checkout@v4
         with:
           ref: t
           fetch-depth: 1
 
+      # 2. THE TOOLS: Preparing the environment.
       - name: Set up Toolchain
         run: |
           sudo apt-get update
           sudo apt-get install -y bc build-essential bison flex libssl-dev libelf-dev libncurses-dev crossbuild-essential-arm64
 
+      # 3. THE SEARCH & FIX: Happens ONLY after the files exist.
       - name: Apply Surgical Fixes
         run: |
-          # Fixing the 'non-prototype' error in qmi.c found in the previous run
+          echo "Searching for qmi.c to apply fixes..."
           find . -name "qmi.c" -exec sed -i 's/static int get_moto_device()/static int get_moto_device(void)/g' {} +
           find . -name "qmi.c" -exec sed -i 's/static int get_moto_radio()/static int get_moto_radio(void)/g' {} +
 
+      # 4. THE SEEK & BUILD: Passing the found config to the compiler.
       - name: Compile
         run: |
-          KERNEL_ROOT=$(find . -name "Makefile" -exec dirname {} + | head -n 1)
+          # Detect the kernel root based on the 'arch' folder location
+          KERNEL_ROOT=$(find . -name "arch" -type d -exec dirname {} + | head -n 1)
           cd "$KERNEL_ROOT"
           
-          REAL_CONFIG=$(find . -name "*boston*_defconfig" -printf "%f\n" | head -n 1)
+          # SEEK: Find the config and pass it to the REAL_CONFIG variable
+          REAL_CONFIG=$(find arch/arm64/configs/ -name "*boston*_defconfig" -printf "%f\n" | head -n 1)
           
           if [ -z "$REAL_CONFIG" ]; then
-             echo "Boston config not found."
+             echo "Config not found in primary path, searching everywhere..."
+             REAL_CONFIG=$(find . -name "*boston*_defconfig" -printf "%f\n" | head -n 1)
+          fi
+
+          if [ -z "$REAL_CONFIG" ]; then
+             echo "ERROR: Boston config not found. Here is what I see in configs:"
+             ls arch/arm64/configs/ | head -n 20
              exit 1
           fi
 
+          # PASS: Hand the variable directly to the make command
+          echo "Building with Config: $REAL_CONFIG"
           make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- "$REAL_CONFIG"
           make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)
           
