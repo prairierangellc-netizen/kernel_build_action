@@ -23,10 +23,14 @@ jobs:
           export LLVM=1
           export CROSS_COMPILE=aarch64-linux-gnu-
           
+          # Create output directory
           mkdir -p out
           
-          # Merging the GKI base with Parrot (Stylus 2024) specific drivers
-          make O=out ARCH=arm64 vendor/parrot_GKI.config vendor/parrot_consolidate.config
+          # 1. Initialize the base GKI config (Creates the .config file)
+          make O=out ARCH=arm64 vendor/parrot_GKI.config
           
-          # Full build
+          # 2. Merge the Motorola-specific 'Parrot' fragment
+          make O=out ARCH=arm64 vendor/parrot_consolidate.config
+          
+          # 3. Final Compilation
           make O=out ARCH=arm64 -j$(nproc)
