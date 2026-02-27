@@ -11,20 +11,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
+          # Restore the behavior of ignoring broken submodules
+          submodules: false
           fetch-depth: 1
 
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc build-essential python3 python-is-python3 gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libelf-dev bison flex libssl-dev qtbase5-dev wget pahole
+          sudo apt-get install -y bc build-essential python3 python-is-python3 \
+          gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libelf-dev \
+          bison flex libssl-dev qtbase5-dev wget pahole libssl-dev
 
       - name: Fetch Toolchain
         run: |
           mkdir -p clang
           wget -q --show-progress https://github.com/Zyin87/Clang/raw/main/clang-r487747c.tar.gz -O clang.tar.gz
+          # Check for valid gzip - the fix we needed
           if ! file clang.tar.gz | grep -q "gzip compressed data"; then
-            echo "ERROR: Downloaded file is invalid."
+            echo "ERROR: Downloaded file is invalid. Check URL or LFS."
             exit 1
           fi
           tar -xzf clang.tar.gz -C clang
@@ -32,14 +36,32 @@ jobs:
 
       - name: Build Kernel
         run: |
+          # Restoring the environment variables and paths from yesterday's success
           export PATH=$(pwd)/clang/bin:$PATH
           export ARCH=arm64
           export SUBARCH=arm64
+          export CLANG_TRIPLE=aarch64-linux-gnu-
           export CROSS_COMPILE=aarch64-linux-gnu-
           export CROSS_COMPILE_ARM32=arm-linux-gnueabi-
-          export CLANG_TRIPLE=aarch64-linux-gnu-
+          export KBUILD_BUILD_USER=Nick
+          export KBUILD_BUILD_HOST=KernelOS
+          
+          # Force sync submodules manually to bypass the broken GCC 4.9 path
+          git submodule update --init --recursive --depth 1 || true
+          
+          # Build process
           make O=out CC=clang ARCH=arm64 vendor/wayne_defconfig
-          make -j$(nproc --all) O=out CC=clang CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi-
+          make -j$(nproc --all) O=out \
+            CC=clang \
+            CLANG_TRIPLE=aarch64-linux-gnu- \
+            CROSS_COMPILE=aarch64-linux-gnu- \
+            CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+            LD=ld.lld \
+            AR=llvm-ar \
+            NM=llvm-nm \
+            OBJCOPY=llvm-objcopy \
+            OBJDUMP=llvm-objdump \
+            STRIP=llvm-strip
 
       - name: Upload Kernel Image
         uses: actions/upload-artifact@v4
