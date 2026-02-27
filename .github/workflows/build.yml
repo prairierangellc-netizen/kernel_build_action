@@ -25,16 +25,24 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y bc build-essential bison flex libssl-dev libelf-dev libncurses-dev crossbuild-essential-arm64
 
-      - name: Compile Kernel
+      - name: Locate and Compile Kernel
         run: |
-          # Running directly in the root since 'source' folder doesn't exist on this branch
+          # Find the directory containing the main Makefile
+          KERNEL_ROOT=$(find . -maxdepth 3 -name "Makefile" -exec dirname {} + | head -n 1)
+          echo "Kernel source found in: $KERNEL_ROOT"
+          cd "$KERNEL_ROOT"
+          
+          # Run the build commands
           make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- boston_defconfig
           make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)
+          
+          # Export the path for the upload step
+          echo "FINAL_OUT=$KERNEL_ROOT/out" >> $GITHUB_ENV
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Kernel_Build_Output
           path: |
-            out/arch/arm64/boot/Image.gz
-            out/arch/arm64/boot/dtbo.img
+            ${{ env.FINAL_OUT }}/arch/arm64/boot/Image.gz
+            ${{ env.FINAL_OUT }}/arch/arm64/boot/dtbo.img
