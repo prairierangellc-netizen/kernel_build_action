@@ -14,17 +14,17 @@ jobs:
       - name: Set up Toolchain
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc build-essential flex bison libssl-dev libelf-dev clang lld llvm gcc-aarch64-linux-gnu libncurses-dev
+          sudo apt-get install -y bc build-essential flex bison libssl-dev libelf-dev clang lld llvm gcc-aarch64-linux-gnu
 
       - name: Inject SUSFS (Ghost Layer)
         run: |
           cd kernel
-          # Downloading SUSFS components directly to avoid GitLab Auth
-          curl -LSs https://raw.githubusercontent.com/sidex15/ksu_susfs/main/Kernel_Patches/5.10/full.patch -o susfs.patch
-          curl -LSs https://raw.githubusercontent.com/sidex15/ksu_susfs/main/include/linux/susfs.h -o include/linux/susfs.h
-          curl -LSs https://raw.githubusercontent.com/sidex15/ksu_susfs/main/fs/susfs.c -o fs/susfs.c
+          # Downloading directly from the SUSFS 5.10 stable source
+          wget https://raw.githubusercontent.com/GreenForce-Project/susfs4linux/main/Patches/5.10/full.patch -O susfs.patch
+          wget https://raw.githubusercontent.com/GreenForce-Project/susfs4linux/main/include/linux/susfs.h -O include/linux/susfs.h
+          wget https://raw.githubusercontent.com/GreenForce-Project/susfs4linux/main/fs/susfs.c -O fs/susfs.c
           
-          # Apply the weave
+          # Applying the patch (using -p1 to match the kernel-msm root)
           patch -p1 < susfs.patch
 
       - name: Compile Kernel
@@ -35,18 +35,18 @@ jobs:
           export CROSS_COMPILE=aarch64-linux-gnu-
           mkdir -p out
           
-          # 1. Initialize the GKI base
+          # Step 1: Initialize the base GKI config we verified in the terminal
           make O=out ARCH=arm64 gki_defconfig
           
-          # 2. Merge Motorola Layers
+          # Step 2: Merge the Motorola vendor layers
           make O=out ARCH=arm64 vendor/parrot_GKI.config
           make O=out ARCH=arm64 vendor/parrot_consolidate.config
           
-          # 3. Enable SUSFS
+          # Step 3: Enable SUSFS in the config
           scripts/config --file out/.config --enable CONFIG_SUSFS
           scripts/config --file out/.config --enable CONFIG_SUSFS_SUS_MOUNT
           scripts/config --file out/.config --enable CONFIG_SUSFS_SUS_PATH
           scripts/config --file out/.config --enable CONFIG_SUSFS_HIDE_KSU
           
-          # 4. Final Build
+          # Step 4: Final Compilation
           make O=out ARCH=arm64 -j$(nproc)
