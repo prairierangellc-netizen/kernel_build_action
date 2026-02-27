@@ -1,57 +1,37 @@
+set-content build.yml @'
 name: Kernel Build
+
 on:
   workflow_dispatch:
-  push:
-    branches: [ main ]
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Dependencies
+      - name: Set up Environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev clang lld llvm curl git libncurses-dev
+          sudo apt-get install -y bc build-essential flex bison libssl-dev libelf-dev clang lld llvm
 
-      - name: Cache Kernel Source
-        uses: actions/cache@v4
-        with:
-          path: kernel
-          key: kernel-mmi-U2UBS34.44-57-8-7
-          restore-keys: |
-            kernel-mmi-
-
-      - name: Clone Motorola Source
+      - name: Clone Kernel Source
         run: |
-          git config --global http.postBuffer 524288000
-          git config --global core.compression 0
-          # Corrected capitalization to MMI
-          git clone https://github.com/MotorolaMobilityLLC/kernel-msm --depth 1 --branch MMI-U2UBS34.44-57-8-7 kernel
-
-      - name: Download Clang Toolchain
-        run: |
-          mkdir -p clang
-          curl -L https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r487747c.tar.gz -o clang.tar.gz
-          tar -C clang -xzf clang.tar.gz
+          git clone https://github.com/MotorolaMobilityLLC/kernel-msm -b android-14-release-u2ubs34.44-86-7 kernel --depth 1
 
       - name: Build Kernel
         run: |
           cd kernel
-          export PATH=$GITHUB_WORKSPACE/clang/bin:$PATH
-          # Setup the pstar configuration
-          make O=out ARCH=arm64 vendor/pstar_defconfig
-          # Build the compressed Image.gz
-          make -j$(nproc) O=out ARCH=arm64 \
-            CC=clang \
-            CLANG_TRIPLE=aarch64-linux-gnu- \
-            CROSS_COMPILE=aarch64-linux-gnu- \
-            LD=ld.lld Image.gz
-
-      - name: Upload Image
-        uses: actions/upload-artifact@v4
-        with:
-          name: kernel-image-gz
-          path: kernel/out/arch/arm64/boot/Image.gz
+          export ARCH=arm64
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          export CC=clang
+          # Verify the file exists before starting to avoid the 200-error wall
+          if [ ! -f arch/arm64/configs/vendor/pstar_defconfig ]; then
+            echo "CONFIG FILE NOT FOUND! Searching..."
+            find arch/arm64/configs/ -name "*pstar*"
+            exit 1
+          fi
+          make vendor/pstar_defconfig
+          make -j$(nproc)
+'@
