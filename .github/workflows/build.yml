@@ -13,17 +13,18 @@ jobs:
           ref: t
           fetch-depth: 1
 
-      - name: List All Defconfigs (Diagnostic)
+      - name: Reveal File Structure
         run: |
-          echo "Searching for all available defconfigs..."
-          find . -name "*_defconfig"
-          echo "-----------------------------------"
-          echo "Searching for any file named boston..."
-          find . -name "*boston*"
+          echo "--- Current Directory ---"
+          ls -F
+          echo "--- Searching for Makefiles ---"
+          find . -name "Makefile" -maxdepth 4
+          echo "--- Searching for any defconfigs ---"
+          find . -name "*defconfig" | head -n 20
 
       - name: Surgical Fix for Moto Prototypes
         run: |
-          echo "Hunting for qmi.c and applying fix..."
+          echo "Applying qmi.c fix..."
           find . -name "qmi.c" -exec sed -i 's/static int get_moto_device()/static int get_moto_device(void)/g' {} +
           find . -name "qmi.c" -exec sed -i 's/static int get_moto_radio()/static int get_moto_radio(void)/g' {} +
 
@@ -32,24 +33,23 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y bc build-essential bison flex libssl-dev libelf-dev libncurses-dev crossbuild-essential-arm64
 
-      - name: Locate and Compile Kernel
+      - name: Compile
         run: |
-          # 1. Find the root (wherever the Makefile is)
-          KERNEL_ROOT=$(find . -maxdepth 3 -name "Makefile" -exec dirname {} + | head -n 1)
+          # Find the folder containing 'arch'
+          KERNEL_ROOT=$(find . -name "arch" -type d -exec dirname {} + | head -n 1)
+          echo "Kernel Root detected: $KERNEL_ROOT"
           cd "$KERNEL_ROOT"
           
-          # 2. Try to find the BEST match for a boston config
-          REAL_CONFIG=$(find . -name "*boston*_defconfig" | head -n 1 | xargs basename)
+          # Find the actual name of the boston config
+          REAL_CONFIG=$(find . -name "*boston*_defconfig" -print -quit | xargs basename)
           
           if [ -z "$REAL_CONFIG" ]; then
-            echo "No boston config found, falling back to generic hunt..."
-            REAL_CONFIG=$(find . -name "*_defconfig" | head -n 1 | xargs basename)
+            echo "Boston config not found, listing available configs in arch/arm64/configs/:"
+            ls arch/arm64/configs/ | head -n 10
+            exit 1
           fi
 
           echo "Using Config: $REAL_CONFIG"
-          echo "Kernel Root: $KERNEL_ROOT"
-          
-          # 3. Build
           make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- "$REAL_CONFIG"
           make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)
           
@@ -60,5 +60,5 @@ jobs:
         with:
           name: Kernel_Build_Output
           path: |
-            ${{ env.FINAL_OUT }}/arch/arm64/boot/Image.gz
-            ${{ env.FINAL_OUT }}/arch/arm64/boot/dtbo.img
+            **/out/arch/arm64/boot/Image.gz
+            **/out/arch/arm64/boot/dtbo.img
