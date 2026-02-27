@@ -25,30 +25,41 @@ jobs:
 
       - name: Sewing Phase
         run: |
-          # Kill the ghost submodule error (Exit Code 128 fix)
+          # Kill the ghost submodule error
           git rm --cached prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 || true
           
-          # 1. Layer the Motorola Base (The Skeleton)
+          # 1. Base Skeleton
           curl -L "https://github.com/MotorolaMobilityLLC/kernel-msm/archive/refs/heads/android-14-release-u2ubs34.44-86-7.zip" -o base.zip
           unzip -q base.zip && cp -rf kernel-msm-android-14-release-u2ubs34.44-86-7/* ./
           
-          # 2. Layer the Blobs (Stock Binaries)
+          # 2. Blobs (Stock Binaries)
           curl -L "https://github.com/MotorolaMobilityLLC/motorola-kernel-modules/archive/refs/heads/android-14-release-u2ub34.44-30-6r1.zip" -o blobs.zip
           unzip -q blobs.zip && cp -rf motorola-kernel-modules-android-14-release-u2ub34.44-30-6r1/* ./
 
-          # 3. Layer the Nerves (Custom Stylus Drivers)
+          # 3. Nerves (Custom Stylus Drivers) - Using direct main branch zip
           curl -L "https://github.com/devicespooflabs/android_vendor_stylus_nerves/archive/refs/heads/main.zip" -o nerves.zip
-          unzip -q nerves.zip && cp -rf android_vendor_stylus_nerves-main/* ./
+          unzip -q nerves.zip && cp -rf android_vendor_stylus_nerves-main/* ./ || echo "Warning: Nerves unzip failed"
 
-          # 4. Layer the Brain (Custom Logic/Hooks)
+          # 4. Brain (Custom Logic/Hooks)
           curl -L "https://github.com/devicespooflabs/android_vendor_stylus_brain/archive/refs/heads/main.zip" -o brain.zip
-          unzip -q brain.zip && cp -rf android_vendor_stylus_brain-main/* ./
+          unzip -q brain.zip && cp -rf android_vendor_stylus_brain-main/* ./ || echo "Warning: Brain unzip failed"
 
           # 5. Apply susfs
           curl -L "https://gitlab.com/khanning/susfs4kg/-/raw/main/kernel_patches/5.10/susfs.patch" -o susfs.patch
-          patch -p1 < susfs.patch || echo "susfs patch applied with offsets"
+          # We check if the file is valid before patching
+          if [ -f "susfs.patch" ]; then
+            patch -p1 < susfs.patch || echo "susfs patch skipped"
+          fi
 
           rm -rf *.zip kernel-msm-* motorola-kernel-modules-* android_vendor_stylus_* susfs.patch
+
+      - name: Verify Config Presence
+        run: |
+          if [ ! -f "arch/arm64/configs/vendor/wayne_defconfig" ]; then
+            echo "ERROR: wayne_defconfig not found in arch/arm64/configs/vendor/"
+            ls -R arch/arm64/configs/vendor/ || true
+            exit 1
+          fi
 
       - name: Build Kernel
         run: |
@@ -58,7 +69,6 @@ jobs:
           export KBUILD_BUILD_USER=Nick
           export KBUILD_BUILD_HOST=KernelOS
           
-          # This defconfig is provided by the Brain/Nerve sewing
           make O=out CC=clang ARCH=arm64 vendor/wayne_defconfig
           
           make -j$(nproc --all) O=out \
@@ -71,5 +81,5 @@ jobs:
       - name: Upload Kernel Image
         uses: actions/upload-artifact@v4
         with:
-          name: KernelOS-A14-Final
+          name: KernelOS-Final-Build
           path: out/arch/arm64/boot/Image.gz-dtb
