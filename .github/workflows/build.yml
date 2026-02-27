@@ -27,16 +27,27 @@ jobs:
 
       - name: Locate and Compile Kernel
         run: |
-          # Find the directory containing the main Makefile
-          KERNEL_ROOT=$(find . -maxdepth 3 -name "Makefile" -exec dirname {} + | head -n 1)
-          echo "Kernel source found in: $KERNEL_ROOT"
+          # 1. Find the path to the defconfig file
+          CONFIG_PATH=$(find . -name "boston_defconfig" | head -n 1)
+          if [ -z "$CONFIG_PATH" ]; then
+            echo "ERROR: boston_defconfig not found!"
+            exit 1
+          fi
+          
+          # 2. The Kernel Root is 3 levels up from arch/arm64/configs/boston_defconfig
+          # We'll just find the nearest Makefile to that config file
+          KERNEL_ROOT=$(dirname "$CONFIG_PATH")
+          while [ ! -f "$KERNEL_ROOT/Makefile" ] && [ "$KERNEL_ROOT" != "." ]; do
+            KERNEL_ROOT=$(dirname "$KERNEL_ROOT")
+          done
+          
+          echo "Kernel source detected at: $KERNEL_ROOT"
           cd "$KERNEL_ROOT"
           
-          # Run the build commands
+          # 3. Run the build
           make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- boston_defconfig
           make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)
           
-          # Export the path for the upload step
           echo "FINAL_OUT=$KERNEL_ROOT/out" >> $GITHUB_ENV
 
       - name: Upload Artifact
