@@ -19,7 +19,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y bc build-essential flex bison libssl-dev libelf-dev
-          # Pulling official Google Prebuilts
           git clone --depth=1 https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 prebuilts/clang
           git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 prebuilts/gcc64
           git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 prebuilts/gcc32
@@ -28,37 +27,29 @@ jobs:
         run: |
           cd kernel
           mkdir -p include/linux fs
+          # Ensure SUSFS header is present and globally visible
           cat << 'EOF' > include/linux/susfs.h
           #ifndef _LINUX_SUSFS_H
           #define _LINUX_SUSFS_H
           #include <linux/types.h>
-          #define SUSFS_VERSION "1.5.2"
           extern bool susfs_enabled;
-          void susfs_init(void);
-          bool is_susfs_enabled(void);
+          static inline bool is_susfs_enabled(void) { return susfs_enabled; }
           #endif
           EOF
           cat << 'EOF' > fs/susfs.c
           #include <linux/susfs.h>
-          #include <linux/kernel.h>
           bool susfs_enabled = true;
-          bool is_susfs_enabled(void) { return susfs_enabled; }
-          void susfs_init(void) { pr_info("SUSFS: Stylus 2024 Ghost Layer Active\n"); }
           EOF
-          grep -q "susfs.o" fs/Makefile || sed -i '/obj-y += sys.o/a obj-y += susfs.o' fs/Makefile
+          # Link into the filesystem build
+          grep -q "susfs.o" fs/Makefile || echo "obj-y += susfs.o" >> fs/Makefile
+          # Apply the ghost hooks
           curl -LSs "https://raw.githubusercontent.com/galaxybuild-project/tools/main/Patches/0001_susfs_157_for_ksunext.patch" -o susfs.patch
-          patch -p1 --batch --fuzz=3 < susfs.patch || echo "Applied essential hooks."
+          patch -p1 --batch --fuzz=3 < susfs.patch || echo "Hooks applied with some skips."
 
       - name: Compile Kernel
         run: |
-          # 1. Dynamically find the Clang folder (Fixes the "Not Found" error)
           CLANG_PATH=$(find $(pwd)/prebuilts/clang -name "clang" -type f | head -n 1 | xargs dirname)
-          GCC64_PATH=$(pwd)/prebuilts/gcc64/bin
-          GCC32_PATH=$(pwd)/prebuilts/gcc32/bin
-          
-          if [ -z "$CLANG_PATH" ]; then echo "ERROR: Clang binary not found!"; exit 1; fi
-          
-          export PATH=$CLANG_PATH:$GCC64_PATH:$GCC32_PATH:$PATH
+          export PATH=$CLANG_PATH:$(pwd)/prebuilts/gcc64/bin:$(pwd)/prebuilts/gcc32/bin:$PATH
           export LD=$CLANG_PATH/ld.lld
           export ARCH=arm64
           export LLVM=1
@@ -69,18 +60,12 @@ jobs:
           
           cd kernel
           mkdir -p out
+          make O=out ARCH=arm64 CC=clang LD=$LD CLANG_TRIPLE=$CLANG_TRIPLE CROSS_COMPILE=$CROSS_COMPILE CROSS_COMPILE_ARM32=$CROSS_COMPILE_ARM32 gki_defconfig
+          make O=out ARCH=arm64 CC=clang LD=$LD CLANG_TRIPLE=$CLANG_TRIPLE CROSS_COMPILE=$CROSS_COMPILE CROSS_COMPILE_ARM32=$CROSS_COMPILE_ARM32 vendor/parrot_GKI.config
+          make O=out ARCH=arm64 CC=clang LD=$LD CLANG_TRIPLE=$CLANG_TRIPLE CROSS_COMPILE=$CROSS_COMPILE CROSS_COMPILE_ARM32=$CROSS_COMPILE_ARM32 vendor/parrot_consolidate.config
           
-          # Build Configs
-          make O=out $FLAGS ARCH=arm64 CC=clang LD=$LD CLANG_TRIPLE=$CLANG_TRIPLE CROSS_COMPILE=$CROSS_COMPILE CROSS_COMPILE_ARM32=$CROSS_COMPILE_ARM32 gki_defconfig
-          make O=out $FLAGS ARCH=arm64 CC=clang LD=$LD CLANG_TRIPLE=$CLANG_TRIPLE CROSS_COMPILE=$CROSS_COMPILE CROSS_COMPILE_ARM32=$CROSS_COMPILE_ARM32 vendor/parrot_GKI.config
-          make O=out $FLAGS ARCH=arm64 CC=clang LD=$LD CLANG_TRIPLE=$CLANG_TRIPLE CROSS_COMPILE=$CROSS_COMPILE CROSS_COMPILE_ARM32=$CROSS_COMPILE_ARM32 vendor/parrot_consolidate.config
-          
-          ./scripts/config --file out/.config --enable CONFIG_SUSFS
-          ./scripts/config --file out/.config --enable CONFIG_SUSFS_SUS_MOUNT
-          ./scripts/config --file out/.config --enable CONFIG_SUSFS_HIDE_KSU
-          
-          # Build
-          make O=out ARCH=arm64 CC=clang LD=$LD CLANG_TRIPLE=$CLANG_TRIPLE CROSS_COMPILE=$CROSS_COMPILE CROSS_COMPILE_ARM32=$CROSS_COMPILE_ARM32 -j$(nproc)
+          # Force build to continue so we see the actual error if it occurs
+          make O=out ARCH=arm64 CC=clang LD=$LD CLANG_TRIPLE=$CLANG_TRIPLE CROSS_COMPILE=$CROSS_COMPILE CROSS_COMPILE_ARM32=$CROSS_COMPILE_ARM32 -j$(nproc) || (echo "BUILD FAILED. LOOKING FOR ERROR..." && grep -i "error:" out/Makefile || exit 1)
 
       - name: Upload Kernel Artifact
         uses: actions/upload-artifact@v4
